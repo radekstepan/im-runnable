@@ -1,22 +1,19 @@
-Sandbox = require 'sandbox'
-eco     = require 'eco'
-fs      = require 'fs'
+moment    = require 'moment'
+fs        = require 'fs'
+{ spawn } = require 'child_process'
 
-which = 'resolve-ids'
+start = moment()
 
-fs.readFile './env.eco.js', 'utf8', (err, env) ->
-    throw err if err
+child = spawn "bash", [ 'exec.sh' ]
 
-    fs.readFile "./scripts/#{which}.js", 'utf8', (err, script) ->
-        throw err if err
+child.stdout.on 'data', (data) ->
+    try
+        console.log JSON.stringify JSON.parse(data), null, 2
+    catch
+        console.log new String data
 
-        try
-            fn = eco.precompile env
-        catch err
-            throw err
+child.stderr.on 'data', (err) ->
+    throw err
 
-        js = eco.render env, { script }
-
-        box = new Sandbox()
-        box.run js, (output) ->
-            console.log JSON.stringify output, null, 4
+child.on 'close', (code) ->
+    console.log 'Done in', moment().diff(start), 'ms'
