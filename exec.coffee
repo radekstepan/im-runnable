@@ -1,4 +1,3 @@
-fs        = require 'fs'
 { spawn } = require 'child_process'
 
 time = -> + new Date
@@ -7,7 +6,7 @@ a = do time
 
 # Run this script.
 return unless script = process.argv[2]
-child  = spawn 'bash', [ 'exec.sh', script ]
+child = spawn 'bash', [ 'exec.sh', script ]
 
 # Debug the output.
 child.stdout.on 'data', (data) ->

@@ -25,7 +25,7 @@ $ docker commit <id> imjs
 $ docker images
 ```
 
-Now we have an image saved under `imjs`.
+Now we have an image saved under `imjs`. You can now exit from the container.
 
 To run commands against this image:
 
