@@ -1,19 +1,26 @@
-moment    = require 'moment'
 fs        = require 'fs'
 { spawn } = require 'child_process'
 
-start = moment()
+time = -> + new Date
 
-child = spawn "bash", [ 'exec.sh' ]
+a = do time
 
+# Run this script.
+return unless script = process.argv[2]
+child  = spawn 'bash', [ 'exec.sh', script ]
+
+# Debug the output.
 child.stdout.on 'data', (data) ->
     try
         console.log JSON.stringify JSON.parse(data), null, 2
     catch
         console.log new String data
 
+# Trouble.
 child.stderr.on 'data', (err) ->
     throw err
 
+# How long did it take.
 child.on 'close', (code) ->
-    console.log 'Done in', moment().diff(start), 'ms'
+    b = do time
+    console.log '\nDone in', b - a, 'ms'

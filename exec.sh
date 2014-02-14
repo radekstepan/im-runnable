@@ -1,1 +1,2 @@
-less ./scripts/search.js | sudo docker run -i imjs /bin/bash -c "cat > hello.js; node hello.js"
+#!/bin/bash
+less ./scripts/$1 | sudo docker run -i imjs /bin/bash -c "cat > script.js; node script.js"

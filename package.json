@@ -2,12 +2,5 @@
   "name": "im-runnable",
   "version": "0.0.0",
   "description": "Learn you some InterMine Web Services for good",
-  "dependencies": {
-    "sandbox": "gf3/sandbox",
-    "eco": "~1.1.0-rc-3",
-    "imjs": "~3.2.1",
-    "moment": "~2.5.1",
-    "request": "~2.33.0"
-  },
   "author": "Radek <rs676@cam.ac.uk>"
 }
