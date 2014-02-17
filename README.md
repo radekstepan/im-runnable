@@ -30,13 +30,15 @@ Now we have an image saved under `imjs`. You can now exit from the container.
 To run commands against this image:
 
 ```bash
-$ coffee exec.coffee <script>
+$ coffee exec.coffee <lang> <script>
 ```
 
-Where script is the name of the script in the `/scripts` directory. So to run a simple test:
+Where `lang` is the command that will run your `script` on the other end. So to run a simple test:
 
 ```bash
-$ coffee exec.coffee test.js
+$ coffee exec.coffee node scripts/test.js
 ```
+
+Paths can be absolute or relative to the `exec.coffee` script.
 
 You should see the result and the time it took to run this command.
