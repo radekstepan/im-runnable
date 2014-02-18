@@ -2,7 +2,7 @@
 fs      = require 'fs'
 restify = require 'restify'
 
-fs.readFile __dirname + '/scripts/test.js', 'utf8', (err, script) ->
+fs.readFile __dirname + '/scripts/search.js', 'utf8', (err, script) ->
     throw err if err
 
     client = restify.createJsonClient
@@ -15,6 +15,5 @@ fs.readFile __dirname + '/scripts/test.js', 'utf8', (err, script) ->
         'cmd': 'node'
         'src': script
     , (err, req, res, body) ->
-        throw err if err
-
-        console.log JSON.stringify body, null, 2
+        console.log JSON.stringify JSON.parse(body.stdout.join('\n')), null, 2
+        process.exit err

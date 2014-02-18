@@ -19,11 +19,26 @@ server.use do restify.bodyParser
 
 # Run a script.
 server.post '/api/run', (req, res, next) ->
-    # Auth.
+    # TODO: Auth.
     token = req.headers?.authorization
-    # Run it and get the res.
-    runner req.params, (out) ->
-        res.send out
+
+    # Validate params.
+    { cmd, src } = req.params
+    unless cmd and src
+        res.send new restify.MissingParameterError '`cmd` and `src` need to be provided'
+        do next
+
+    unless cmd in [ 'node', 'ruby' ]
+        res.send new restify.InvalidArgumentError "#{cmd} is not supported"
+        do next
+
+    # Run it and get the output.
+    runner { cmd, src }, (err, out) ->
+        if err
+            res.send new restify.InternalError err
+        else
+            res.send out
+        
         do next
 
 app = connect()

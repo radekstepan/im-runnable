@@ -27,4 +27,4 @@ module.exports = ({ src, cmd }, cb) ->
     # How long did it take.
     child.on 'close', (code) ->
         res.ms = do time - start
-        cb res
+        cb null, res
