@@ -23,10 +23,7 @@ app = connect()
 .use(connect.static("#{root}/public"))
 # Pipe to restify.
 .use((req, res, next) ->
-    if req.url.match /^\/api/
-        server.server.emit 'request', req, res
-    else
-        do next
+    server.server.emit 'request', req, res
 # Connect listen.
 ).listen process.env.PORT or 5000
 
