@@ -27,18 +27,28 @@ $ docker images
 
 Now we have an image saved under `imjs`. You can now exit from the container.
 
-To run commands against this image:
+Start the service:
 
 ```bash
-$ coffee exec.coffee <lang> <script>
+$ sudo PORT=5000 node index.js
 ```
 
-Where `lang` is the command that will run your `script` on the other end. So to run a simple test:
+You need to be in priviledged mode to run `docker` commands. Port is being specified by passing it as an env variable.
 
-```bash
-$ coffee exec.coffee node scripts/test.js
+Now you can post some code and get results back:
+
+```coffeescript
+#!/usr/bin/env coffee
+restify = require 'restify'
+
+client = restify.createJsonClient
+    'url': 'http://0.0.0.0:5000'
+
+client.post '/api/run',
+    'cmd': 'node'
+    'src': 'console.log(3*6)'
+, (err, req, res, body) ->
+    throw err if err
+
+    console.log body
 ```
-
-Paths can be absolute or relative to the `exec.coffee` script.
-
-You should see the result and the time it took to run this command.

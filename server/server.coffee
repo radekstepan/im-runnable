@@ -3,6 +3,7 @@ logger  = require('tracer').colorConsole()
 restify = require 'restify'
 connect = require 'connect'
 path    = require 'path'
+runner  = require './runner'
 
 # Root directory.
 root = path.resolve __dirname, '../'
@@ -13,10 +14,17 @@ root = path.resolve __dirname, '../'
 server = restify.createServer
     'name': 'im-runnable'
     'version': version or '0.0.0'
- 
-server.get '/api/run', (req, res, next) ->
-    res.send req.params
-    do next
+
+server.use do restify.bodyParser
+
+# Run a script.
+server.post '/api/run', (req, res, next) ->
+    # Auth.
+    token = req.headers?.authorization
+    # Run it and get the res.
+    runner req.params, (out) ->
+        res.send out
+        do next
 
 app = connect()
 # Serve the public dir.
