@@ -1,3 +1,4 @@
+#!/usr/bin/env coffee
 { spawn } = require 'child_process'
 path      = require 'path'
 

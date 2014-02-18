@@ -1,6 +1,12 @@
 {
-  "name": "im-runnable",
-  "version": "0.0.0",
-  "description": "Learn you some InterMine Web Services for good",
-  "author": "Radek <rs676@cam.ac.uk>"
+    "name": "im-runnable",
+    "version": "0.0.1",
+    "description": "Learn you some InterMine Web Services for good",
+    "author": "Radek <rs676@cam.ac.uk>",
+    "dependencies": {
+        "restify": "~2.6.1",
+        "connect": "~2.13.0",
+        "coffee-script": "~1.7.1",
+        "tracer": "~0.6.2"
+    }
 }
