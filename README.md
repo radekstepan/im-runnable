@@ -1,4 +1,4 @@
-#im-runnable
+#InterMine Runnable
 
 Learn you some InterMine Web Services for good.
 
