@@ -21,8 +21,14 @@ module.exports = (grunt) ->
                     # Vendor dependencies.
                     'vendor/jquery/jquery.js'
                     'vendor/lodash/dist/lodash.js'
+
                     'vendor/canjs/can.jquery.js'
                     'vendor/canjs/can.map.setter.js'
+                    
+                    'vendor/codemirror/lib/codemirror.js'
+                    'vendor/codemirror/mode/javascript/javascript.js'
+                    'vendor/codemirror/mode/ruby/ruby.js'
+                    
                     # Our app.
                     'public/js/runnable.js'
                 ]
@@ -34,6 +40,12 @@ module.exports = (grunt) ->
                 src: [
                     'vendor/foundation/css/normalize.css'
                     'vendor/foundation/css/foundation.css'
+                    'client/app/styles/fonts.css'
+                    
+                    'vendor/codemirror/lib/codemirror.css'
+                    'vendor/codemirror/theme/neat.css'
+                    'client/app/styles/codemirror-theme.css'
+                    
                     # Our app.
                     'public/css/runnable.css'
                 ]

@@ -212,8 +212,47 @@
     // index.coffee
     root.require.register('runnable/client/app/index.js', function(exports, require, module) {
     
-      module.exports = function() {};
+      var components, layout, render;
       
+      render = require('./modules/render');
+      
+      layout = require('./templates/layout');
+      
+      components = [];
+      
+      module.exports = function(opts) {
+        var name, _i, _len;
+        for (_i = 0, _len = components.length; _i < _len; _i++) {
+          name = components[_i];
+          require("./components/" + name);
+        }
+        $(opts.el).html(render(layout));
+        return CodeMirror($('#editor .input')[0], {
+          'value': 'function myScript(){ return 100; }',
+          'mode': 'javascript',
+          'theme': 'jsbin',
+          'lineNumbers': true
+        });
+      };
+      
+    });
+
+    // render.coffee
+    root.require.register('runnable/client/app/modules/render.js', function(exports, require, module) {
+    
+      module.exports = function(template, ctx) {
+        if (ctx == null) {
+          ctx = {};
+        }
+        return can.view.mustache(template)(ctx);
+      };
+      
+    });
+
+    // layout.mustache
+    root.require.register('runnable/client/app/templates/layout.js', function(exports, require, module) {
+    
+      module.exports = ["<div id=\"nav\" class=\"row\">","    <div class=\"small-12 large-3 columns\">","        Logo","    </div>","    <div class=\"small-12 large-9 columns\">","        Account","    </div>","</div>","","<div class=\"row\">","    <div id=\"editor\" class=\"small-12 large-6 columns\">","        <div class=\"row\">","            <div class=\"menu small-12 columns\">","                Editor Menu","            </div>","        </div class=\"row\">","        <div class=\"row\">","            <div class=\"input small-12 columns\">","                ","            </div>","        </div class=\"row\">","    </div>","    <div id=\"results\" class=\"small-12 large-6 columns\">","        <div class=\"row\">","            <div class=\"small-12 columns\">","                Results Menu","            </div>","        </div class=\"row\">","        <div class=\"row\">","            <div class=\"small-12 columns\">","                Results","            </div>","        </div class=\"row\">","    </div>","</div>","","<div id=\"footer\" class=\"row\">","    <div class=\"small-12 columns\">","        Footer","    </div>","</div>"].join("\n");
     });
   })();
 
