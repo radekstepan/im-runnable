@@ -227,11 +227,12 @@
           require("./components/" + name);
         }
         $(opts.el).html(render(layout));
-        return CodeMirror($('#editor .input')[0], {
-          'value': 'function myScript(){ return 100; }',
+        return CodeMirror($('#editor').get(0), {
           'mode': 'javascript',
-          'theme': 'jsbin',
-          'lineNumbers': true
+          'theme': 'github',
+          'lineNumbers': true,
+          'viewportMargin': +Infinity,
+          'value': "// Require the Request library.\nvar req = require('request');\n\n// Search against FlyMine.\nreq({\n    'uri': 'http://www.flymine.org/query/service/search',\n    // For terms associated with \"micklem\".\n    'qs': { 'q': \"micklem\" }\n}, function(err, res) {\n    if (err) throw err;\n\n    // Just log it.\n    console.log(res.body);\n});"
         });
       };
       
@@ -252,7 +253,7 @@
     // layout.mustache
     root.require.register('runnable/client/app/templates/layout.js', function(exports, require, module) {
     
-      module.exports = ["<div id=\"nav\" class=\"row\">","    <div class=\"small-12 large-3 columns\">","        Logo","    </div>","    <div class=\"small-12 large-9 columns\">","        Account","    </div>","</div>","","<div class=\"row\">","    <div id=\"editor\" class=\"small-12 large-6 columns\">","        <div class=\"row\">","            <div class=\"menu small-12 columns\">","                Editor Menu","            </div>","        </div class=\"row\">","        <div class=\"row\">","            <div class=\"input small-12 columns\">","                ","            </div>","        </div class=\"row\">","    </div>","    <div id=\"results\" class=\"small-12 large-6 columns\">","        <div class=\"row\">","            <div class=\"small-12 columns\">","                Results Menu","            </div>","        </div class=\"row\">","        <div class=\"row\">","            <div class=\"small-12 columns\">","                Results","            </div>","        </div class=\"row\">","    </div>","</div>","","<div id=\"footer\" class=\"row\">","    <div class=\"small-12 columns\">","        Footer","    </div>","</div>"].join("\n");
+      module.exports = ["<div id=\"nav\">","    <ul>","        <li><a href=\"#\">Public scripts</a></li>","        <li><a href=\"#\">API Documentation</a></li>","        <li><a href=\"#\" class=\"icon user\">Login</a></li>","    </ul>","","    <a class=\"logo\" href=\"/\">InterMine Runnable</a>","</div>","","<div id=\"toolbar\">","    <div class=\"left\">","        <div class=\"toolbar\">","            <div class=\"actions\">","                <button disabled=\"disabled\" class=\"secondary\">Save</button>","                <button class=\"main\">Run</button>","            </div>","","            <h2 class=\"icon code\">Editor</h2>","        </div>","    </div>","    <div class=\"right\">","        <div class=\"toolbar\">","            <h2 class=\"icon eye\">Results</h2>","        </div>","    </div>","</div>","<div id=\"panes\">","    <div id=\"editor\" class=\"left\"></div>","    <div class=\"right\">","        <div id=\"results\">","            <p>The results of your script will show up here.</p>","        </div>","    </div>","</div>"].join("\n");
     });
   })();
 

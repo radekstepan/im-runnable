@@ -1,4 +1,4 @@
-req = require('request');
+var req = require('request');
 
 req({
     'uri': 'http://www.flymine.org/query/service/search',

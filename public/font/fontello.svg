@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg">
+<metadata>Copyright (C) 2014 by original authors @ fontello.com</metadata>
+<defs>
+<font id="fontello" horiz-adv-x="1000" >
+<font-face font-family="fontello" font-weight="400" font-stretch="normal" units-per-em="1000" ascent="850" descent="-150" />
+<missing-glyph horiz-adv-x="1000" />
+<glyph glyph-name="eye" unicode="&#xe801;" d="m929 314q-85 132-213 197q34-58 34-125q0-104-73-177t-177-73t-177 73t-73 177q0 67 34 125q-128-65-213-197q75-114 187-182t242-68t242 68t187 182z m-402 215q0 11-8 19t-19 7q-70 0-120-50t-50-119q0-12 8-19t19-8t19 8t8 19q0 48 34 82t82 34q11 0 19 8t8 19z m473-215q0-19-11-38q-78-129-210-206t-279-77t-279 77t-210 206q-11 19-11 38t11 39q78 128 210 205t279 78t279-78t210-205q11-20 11-39z" horiz-adv-x="1000" />
+<glyph glyph-name="code" unicode="&#xe800;" d="m344 69l-28-28q-5-5-12-5t-13 5l-260 260q-6 6-6 13t6 13l260 260q5 6 13 6t12-6l28-28q6-5 6-13t-6-12l-219-220l219-219q6-6 6-13t-6-13z m330 596l-208-721q-2-7-9-11t-13-1l-34 9q-8 3-11 9t-2 14l208 720q3 8 9 11t13 2l35-10q7-2 11-9t1-13z m367-364l-260-260q-6-5-13-5t-13 5l-28 28q-5 6-5 13t5 13l219 219l-219 220q-5 5-5 12t5 13l28 28q6 6 13 6t13-6l260-260q5-5 5-13t-5-13z" horiz-adv-x="1071.4" />
+<glyph glyph-name="user" unicode="&#xe803;" d="m736 128q204-72 204-122l0-106l-940 0l0 106q0 50 204 122q94 34 128 69t34 95q0 22-22 49t-32 73q-2 12-9 18t-14 8t-14 17t-9 43q0 16 5 26t9 12l4 4q-8 50-12 88q-4 54 41 112t157 58t158-58t40-112l-12-88q18-8 18-42q-2-28-9-43t-14-17t-14-8t-9-18q-8-48-31-74t-23-48q0-60 35-95t127-69z" horiz-adv-x="940" />
+<glyph glyph-name="download" unicode="&#xe802;" d="m968 198q18-10 27-32t3-40l-28-154q-4-20-22-33t-40-13l-816 0q-22 0-40 13t-22 33l-28 154q-10 48 32 72l158 108l98 0l-170-130l178 0q8 0 12-8l40-110l300 0l40 110q8 8 12 8l178 0l-170 130l98 0z m-208 322l-260-244l-260 244l166 0l0 256l190 0l0-256l164 0z" horiz-adv-x="1000" />
+</font>
+</defs>
+</svg>

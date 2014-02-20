@@ -1,1 +1,49 @@
-.row{max-width:100%}
+body{font-family:'Open Sans','Helvetica Neue',Helvetica,Arial,sans-serif;background:#fff;font-size:16px}
+h2{color:#4183c4;font-size:20px;font-weight:bold;margin:0;display:inline-block;}
+h2.icon:before{margin-right:6px}
+a{color:#4183c4;text-decoration:none;font-weight:bold;}
+a.icon:before{margin-right:6px}
+a:hover{text-decoration:underline;color:#222}
+.left,.right{width:50%;position:absolute}
+.left{left:0}
+.right{right:0}
+#nav{padding:10px;border-bottom:1px solid #d6d6d6;}
+#nav .logo{background:url("../img/logo.png") no-repeat 0 0;width:216px;height:75px;display:inline-block;font-size:0;overflow:hidden}
+#nav ul{float:right;list-style-type:none;margin-top:28px;}
+#nav ul li{display:inline-block;margin:0 10px;}
+#nav ul li a{padding:4px 10px}
+#toolbar{border-bottom:1px solid #d6d6d6;height:40px;line-height:40px;padding:0 10px;position:relative;background:-webkit-linear-gradient(rgba(255,255,255,0), #f0f2f6 95%, #e5e8ee);background:-moz-linear-gradient(rgba(255,255,255,0), #f0f2f6 95%, #e5e8ee);background:-o-linear-gradient(rgba(255,255,255,0), #f0f2f6 95%, #e5e8ee);background:-ms-linear-gradient(rgba(255,255,255,0), #f0f2f6 95%, #e5e8ee);background:linear-gradient(rgba(255,255,255,0), #f0f2f6 95%, #e5e8ee);}
+#toolbar .left .toolbar{border-right:1px solid #d6d6d6}
+#toolbar .toolbar{padding:0 10px}
+#toolbar .actions{float:right}
+#panes #editor,#panes #results{top:142px;bottom:0}
+#panes #editor .CodeMirror{height:100%;border-right:1px solid #d6d6d6}
+#panes #results{padding:10px}
+
+.cm-s-github span.cm-keyword{font-weight:bold;color:#333}
+.cm-s-github span.cm-atom{color:#990073}
+.cm-s-github span.cm-number{color:#164}
+.cm-s-github span.cm-def{font-weight:bold;color:#900}
+.cm-s-github span.cm-variable{color:#333}
+.cm-s-github span.cm-variable-2{color:#008080}
+.cm-s-github span.cm-variable-3{color:#008080}
+.cm-s-github span.cm-comment{color:#998;font-style:italic}
+.cm-s-github span.cm-string{color:#d14}
+.cm-s-github span.cm-meta{color:#ff0}
+.cm-s-github span.cm-qualifier{color:#808080}
+.cm-s-github span.cm-builtin{color:#7ea656}
+.cm-s-github span.cm-bracket{color:#cc7}
+.cm-s-github span.cm-tag{font-weight:bold;color:#458}
+.cm-s-github span.cm-attribute{color:#7f007f}
+.cm-s-github span.cm-error{color:#f00}
+.cm-s-github .CodeMirror-activeline-background{background:#e8f2ff !important}
+.cm-s-github .CodeMirror-matchingbracket{outline:1px solid #808080;color:#000 !important;background:#ff0}
+.cm-s-github .CodeMirror-gutters{background:#fff}
+.cm-s-github .CodeMirror-linenumber{color:rgba(0,0,0,0.3)}
+.cm-s-github .CodeMirror-selected{background:#ffc}
+
+.icon:before{font-family:"fontello";font-style:normal;font-weight:normal;speak:none;display:inline-block;text-decoration:inherit;text-align:center;font-variant:normal;text-transform:none;width:1em;line-height:1em}
+.icon.code:before{content:'\e800'}
+.icon.eye:before{content:'\e801'}
+.icon.download:before{content:'\e802'}
+.icon.user:before{content:'\e803'}

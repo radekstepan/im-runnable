@@ -12,7 +12,7 @@ module.exports = (grunt) ->
 
         stylus:
             compile:
-                src: [ 'client/app/styles/app.styl' ]
+                src: [ 'client/app/styles/**/*.styl' ]
                 dest: 'public/css/runnable.css'
 
         concat:            
@@ -27,6 +27,7 @@ module.exports = (grunt) ->
                     
                     'vendor/codemirror/lib/codemirror.js'
                     'vendor/codemirror/mode/javascript/javascript.js'
+                    'vendor/codemirror/mode/coffeescript/coffeescript.js'
                     'vendor/codemirror/mode/ruby/ruby.js'
                     
                     # Our app.
@@ -39,13 +40,8 @@ module.exports = (grunt) ->
             styles:
                 src: [
                     'vendor/foundation/css/normalize.css'
-                    'vendor/foundation/css/foundation.css'
                     'client/app/styles/fonts.css'
-                    
                     'vendor/codemirror/lib/codemirror.css'
-                    'vendor/codemirror/theme/neat.css'
-                    'client/app/styles/codemirror-theme.css'
-                    
                     # Our app.
                     'public/css/runnable.css'
                 ]

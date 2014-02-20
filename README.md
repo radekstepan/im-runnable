@@ -1,4 +1,4 @@
-#InterMine Runnable
+#InterMine Runnable [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
 
 Learn you some InterMine Web Services for good.
 

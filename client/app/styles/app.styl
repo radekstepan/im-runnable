@@ -1,4 +1,98 @@
 @import 'nib'
 
-.row
-    max-width: 100%
+$link-color   = #4183C4
+$border-color = #D6D6D6
+
+body
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif
+    background: #FFF
+    font-size: 16px
+
+h2
+    color: $link-color
+    font-size: 20px
+    font-weight: bold
+    margin: 0
+    display: inline-block
+
+    &.icon
+        &:before
+            margin-right: 6px
+
+a
+    color: $link-color
+    text-decoration: none
+    font-weight: bold
+
+    &.icon
+        &:before
+            margin-right: 6px
+
+    &:hover
+        text-decoration: underline
+        color: #222
+
+.left, .right
+    width: 50%
+    position: absolute
+
+.left
+    left: 0
+
+.right
+    right: 0
+
+#nav
+    padding: 10px
+    border-bottom: 1px solid $border-color
+
+    .logo
+        background: url('../img/logo.png') no-repeat 0 0
+        width: 216px
+        height: 75px
+        display: inline-block
+        font-size: 0
+        overflow: hidden
+
+    ul
+        float: right
+        list-style-type: none
+        margin-top: 28px
+
+        li
+            display: inline-block
+            margin: 0 10px
+
+            a
+                padding: 4px 10px
+
+#toolbar
+    border-bottom: 1px solid $border-color
+    height: 40px
+    line-height: 40px
+    padding: 0 10px
+    position: relative
+    background: linear-gradient(rgba(255, 255, 255, 0), #F0F2F6 95%, #E5E8EE)
+
+    .left
+        .toolbar
+            border-right: 1px solid $border-color
+
+    .toolbar
+        padding: 0 10px
+
+    .actions
+        float: right
+
+#panes
+    #editor, #results
+        top: 142px
+        bottom: 0
+
+    #editor
+        .CodeMirror
+            height: 100%
+            border-right: 1px solid $border-color
+
+    #results
+        padding: 10px

@@ -14,8 +14,24 @@ module.exports = (opts) ->
     $(opts.el).html render layout
 
     # Setup the editor.
-    CodeMirror $('#editor .input')[0],
-        'value':      'function myScript(){ return 100; }',
-        'mode':       'javascript'
-        'theme':      'jsbin'
-        'lineNumbers': yes
+    CodeMirror $('#editor').get(0),
+        'mode':           'javascript'
+        'theme':          'github'
+        'lineNumbers':    yes
+        'viewportMargin': +Infinity
+        'value': """
+            // Require the Request library.
+            var req = require('request');
+
+            // Search against FlyMine.
+            req({
+                'uri': 'http://www.flymine.org/query/service/search',
+                // For terms associated with "micklem".
+                'qs': { 'q': "micklem" }
+            }, function(err, res) {
+                if (err) throw err;
+
+                // Just log it.
+                console.log(res.body);
+            });
+        """
