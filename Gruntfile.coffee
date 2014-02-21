@@ -40,6 +40,7 @@ module.exports = (grunt) ->
             styles:
                 src: [
                     'vendor/foundation/css/normalize.css'
+                    'vendor/foundation/css/foundation.css'
                     'client/app/styles/fonts.css'
                     'vendor/codemirror/lib/codemirror.css'
                     # Our app.

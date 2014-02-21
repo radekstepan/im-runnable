@@ -14,9 +14,9 @@ module.exports = (opts) ->
     $(opts.el).html render layout
 
     # Setup the editor.
-    CodeMirror $('#editor').get(0),
+    CodeMirror $('#editor .content').get(0),
         'mode':           'javascript'
-        'theme':          'github'
+        'theme':          'default'
         'lineNumbers':    yes
         'viewportMargin': +Infinity
         'value': """
@@ -35,3 +35,10 @@ module.exports = (opts) ->
                 console.log(res.body);
             });
         """
+
+    # Reposition sidebar on scroll.
+    do ->
+        height = do $('#nav').outerHeight
+        sidebar = $('#sidebar ul')
+        $(document).on 'scroll', ->
+            sidebar.css 'margin-top', Math.max 0, height - do $(window).scrollTop

@@ -1,98 +1,260 @@
 @import 'nib'
 
-$link-color   = #4183C4
-$border-color = #D6D6D6
+$nav-height = 60px
+$sidebar-width = 70px
 
-body
-    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif
-    background: #FFF
-    font-size: 16px
+body, h1, h2, h3, h4, h5
+    font-family: "Lato"
+    color: #39424E
+
+h1
+    font-size: 2rem
+    font-weight: bold
 
 h2
-    color: $link-color
-    font-size: 20px
-    font-weight: bold
-    margin: 0
-    display: inline-block
+    font-size: 1.8rem
 
-    &.icon
-        &:before
-            margin-right: 6px
+h3
+    font-size: 1.6rem
+
+h4
+    font-size: 1.4rem
+
+h5
+    font-size: 1.2rem
+
+p
+    font-size: 18px
 
 a
-    color: $link-color
-    text-decoration: none
-    font-weight: bold
+    color: #3E96DA
 
-    &.icon
-        &:before
-            margin-right: 6px
+.row
+    max-width: 100%
+
+.btn
+    display: inline-block
+    font-weight: 500
+    border-radius: 4px
+    padding: 10px 20px
+    color: #39424E
+    border: 1px solid #C2C7D0
+    border-bottom-color: #B4BAC5
+    user-select: none
+    background-image: linear-gradient(top, #FFF, #F5F5F5)
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), inset 0 -1px 4px rgba(151, 159, 175, 0.2)
 
     &:hover
-        text-decoration: underline
-        color: #222
+        background-image: linear-gradient(top, #FFF, #F0F0F0)
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), inset 0 -1px 4px rgba(151, 159, 175, 0.2)
+        color: inherit
 
-.left, .right
-    width: 50%
-    position: absolute
+    &:active
+        outline: 0
+        background: #F4F4F4
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05)
 
-.left
-    left: 0
+    &.disabled
+        background: #F1F1F1
+        opacity: 0.65
+        box-shadow: none
+        cursor: default
 
-.right
-    right: 0
+    &.dark
+        color: #FFF
+        border: 1px solid #252A32
+        text-transform: uppercase
+        background-image: linear-gradient(top, #39424E, #303741)
+        box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.15),0 1px 3px rgba(0, 0, 0, 0.1)
+        text-shadow: 1px 1px rgba(0,0,0,0.8)
+
+    &.main
+        color: #FFF
+        border-color: #089243
+        border-bottom-color: #008233
+        background: #2BC56D
+        background-image: linear-gradient(top, #2BC56D, #26B061)
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1), inset 0 -1px 4px rgba(29, 134, 74, 0.3)
+        font-weight: 700
+
+        &:hover
+            background-color: #26AC5F
+            background-image: linear-gradient(top, #2BC56D, #26AC5F)
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1), inset 0 -1px 6px rgba(29, 134, 74, 0.4)
+
+        &:active
+            background: #1AB45C
+            border-color: #548700
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(255, 255, 255, 0.75)
+
+.select
+    padding: 10px 20px 10px 10px
+    font-weight: 700
+    background: #FFF
+    border-radius: 4px
+    border: 1px solid #B4BAC5
+    width: 220px
+    cursor: pointer
+    position: relative
+
+    .icon
+        width: 36px
+        height: 100%
+        position: absolute
+        top: 0
+        right: 0
+        border-left: 1px solid #C2C7D0
+        border-radius: 0 4px 4px 0
+        background: rgba(0, 0, 0, 0)
+        background-image: gradient(linear, left bottom, left top, color-stop(0, #F5F5F5), color-stop(0.5, #FFF))
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), inset 0 -1px 4px rgba(151, 159, 175, 0.2)
+        
+        &:before
+            position: absolute
+            top: 10px
+            right: 2px
 
 #nav
-    padding: 10px
-    border-bottom: 1px solid $border-color
+    background: #39424E
+    height: $nav-height
+    border-bottom: 1px solid #28313D
+    z-index: 101
+    position: absolute
+    top: 0
 
     .logo
-        background: url('../img/logo.png') no-repeat 0 0
-        width: 216px
-        height: 75px
-        display: inline-block
-        font-size: 0
-        overflow: hidden
+        font-size: 18px
+        color: #FFF
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5)
+        font-weight: bold
+        line-height: $nav-height
+
+        span
+            color: #2BC56D
+
+    .btn
+        margin: 10px 0
+
+#sidebar
+    position: fixed
+    left: 0
+    top: 0
+    bottom: 0
+    overflow: hidden
+    width: $sidebar-width
+    z-index: 100
+    transition: width 0.2s ease
+    background: #2E363F
+    border-right: 1px solid #17202C
+
+    &:hover
+        width: 260px
+        box-shadow: 1px 0 5px rgba(23, 32, 44, 0.4)
 
     ul
-        float: right
         list-style-type: none
-        margin-top: 28px
+        padding-top: 10px
+        margin: $nav-height 0 0 0
+
+        li
+            white-space: nowrap
+
+            a
+                padding: 10px 0
+                text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5)
+                transition: all 0.3s ease
+                color: #FFF
+                display: block
+
+                &:before
+                    width: $sidebar-width
+                    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5)
+
+                &:hover
+                    background: #232931
+
+                    &:before
+                        color: #2BC56D
+
+#content
+    padding: ($nav-height + 20) 20px 20px ($sidebar-width + 20)
+
+    #tabs
+        background: #F8F8F8
+        border: 1px solid #C2C7D0
+        margin: 20px 0
+        padding: 20px 20px 18px 20px
 
         li
             display: inline-block
-            margin: 0 10px
+
+            &.active
+                a
+                    border-color: #C2C7D0
+                    border-bottom-color: #FFF
+                    color: #39424E
+                    background: #FFF
+                    padding-bottom: 21px
+            
+            a
+                padding: 10px 30px 20px
+                border: 1px solid #F8F8F8
+                color: #979FAF
+                transition: 0.3s color ease
+                font-weight: bold
+
+                &.icon
+                    &:before
+                        font-weight: bold
+                        margin-right: 8px
+
+                &:hover
+                    color: #39424E
+
+#editor
+    background: #F8F8F8
+    border: 1px solid #C2C7D0
+    margin: 0 20px
+
+    .header
+        padding: 10px 20px
+        border-bottom: 1px solid #C2C7D0
+
+        .btn
+            &:not(:last-child)
+                margin-right: 10px
+
+        .icon
+            &:before
+                margin-right: 8px
+
+    .content
+        .CodeMirror-lines
+            font-size: 1.2em
+            line-height: 1.3em
+
+    .footer
+        border-top: 1px solid #C2C7D0
+        font-family: monospace
+        padding: 16px
+        background: #FFF
+        text-align: right
+
+#footer
+    margin-top: 20px
+    border-top: 1px solid #E4E4E4
+    padding: 20px 20px 20px ($sidebar-width + 20)
+    text-align: center
+
+    p
+        font-size: 16px
+
+    ul
+        list-style-type: none
+        margin: 0
+
+        li
+            display: inline-block
 
             a
-                padding: 4px 10px
-
-#toolbar
-    border-bottom: 1px solid $border-color
-    height: 40px
-    line-height: 40px
-    padding: 0 10px
-    position: relative
-    background: linear-gradient(rgba(255, 255, 255, 0), #F0F2F6 95%, #E5E8EE)
-
-    .left
-        .toolbar
-            border-right: 1px solid $border-color
-
-    .toolbar
-        padding: 0 10px
-
-    .actions
-        float: right
-
-#panes
-    #editor, #results
-        top: 142px
-        bottom: 0
-
-    #editor
-        .CodeMirror
-            height: 100%
-            border-right: 1px solid $border-color
-
-    #results
-        padding: 10px
+                padding: 4px 6px
