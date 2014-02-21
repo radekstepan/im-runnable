@@ -119,7 +119,7 @@ a
             &:before
                 position: absolute
                 top: 10px
-                right: 2px
+                right: 10px
 
     .dropdown
         cursor: default
@@ -141,7 +141,7 @@ a
             .icon
                 position: absolute
                 top: 8px
-                right: 0
+                right: 8px
                 opacity: 0.4
 
             .input
@@ -250,6 +250,7 @@ a
         list-style-type: none
         padding-top: 10px
         margin: $nav-height 0 0 0
+        user-select: none
 
         li
             white-space: nowrap
@@ -287,12 +288,25 @@ a
             &:not(:last-child)
                 margin-right: 10px
 
-        .icon
-            &:before
-                margin-right: 8px
+            &.icon
+                &:before
+                    margin-right: 8px
 
         .select
-            float: right
+            margin-right: 10px
+
+        .icon.right
+            display: block
+            cursor: pointer
+            font-size: 20px
+            line-height: 38px
+            color: #979FAF
+            transition: 0.3s color ease
+            margin: 0 6px
+            user-select: none
+
+            &:hover
+                color: #39424E
 
     .content
         .CodeMirror-lines
