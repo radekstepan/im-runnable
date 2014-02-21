@@ -1,7 +1,9 @@
 @import 'nib'
 
-$nav-height = 60px
-$sidebar-width = 70px
+$nav-height      = 60px
+$sidebar-width   = 70px
+$highlight-color = #2BC56D
+$select-width    = 220px
 
 body, h1, h2, h3, h4, h5
     font-family: "Lato"
@@ -93,26 +95,115 @@ a
     background: #FFF
     border-radius: 4px
     border: 1px solid #B4BAC5
-    width: 220px
-    cursor: pointer
+    width: $select-width
     position: relative
+    user-select: none
+    cursor: pointer
 
-    .icon
-        width: 36px
-        height: 100%
-        position: absolute
-        top: 0
-        right: 0
-        border-left: 1px solid #C2C7D0
-        border-radius: 0 4px 4px 0
-        background: rgba(0, 0, 0, 0)
-        background-image: gradient(linear, left bottom, left top, color-stop(0, #F5F5F5), color-stop(0.5, #FFF))
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), inset 0 -1px 4px rgba(151, 159, 175, 0.2)
-        
-        &:before
+    &.expanded
+        border-radius: 4px 4px 0 0
+
+    .field
+        .icon
+            width: 36px
+            height: 100%
             position: absolute
-            top: 10px
-            right: 2px
+            top: 0
+            right: 0
+            border-left: 1px solid #C2C7D0
+            border-radius: 0 4px 4px 0
+            background: rgba(0, 0, 0, 0)
+            background-image: gradient(linear, left bottom, left top, color-stop(0, #F5F5F5), color-stop(0.5, #FFF))
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), inset 0 -1px 4px rgba(151, 159, 175, 0.2)
+            
+            &:before
+                position: absolute
+                top: 10px
+                right: 2px
+
+    .dropdown
+        cursor: default
+        display: none
+        width: $select-width
+        position: absolute
+        top: 36px
+        left: -1px
+        z-index: 100
+        background: #FFF
+        border: 1px solid #C2C7D0
+        border-radius: 0 0 4px 4px
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05)
+        padding: 10px 4px 4px 4px
+
+        .search
+            position: relative
+            
+            .icon
+                position: absolute
+                top: 8px
+                right: 0
+                opacity: 0.4
+
+            .input
+                border: 1px solid #C2C7D0
+                height: auto
+                outline: 0
+                margin: 0 0 4px 0
+                padding-right: 24px
+                
+                &:focus
+                    background: #FFF
+                    box-shadow: 0 0 5px rgba(62, 150, 218, 0.5), inset 0 1px 2px rgba(151, 159, 175, 0.2), inset 0 1px 15px rgba(151, 159, 175, 0.05)
+                    border: 1px solid rgba(62, 150, 218, 0.7)
+
+        .options
+            list-style-type: none
+            margin: 0
+            font-weight: normal
+            overflow-x: hidden
+            overflow-y: auto
+            max-height: 100px
+
+            li
+                cursor: pointer
+                padding: 2px 10px
+
+                &:hover, &.active
+                    color: #FFF
+                    background: $highlight-color
+
+.tabs
+    background: #F8F8F8
+    border: 1px solid #C2C7D0
+    margin: 20px 0
+    padding: 20px 20px 18px 20px
+
+    li
+        display: inline-block
+
+        &.active
+            a
+                border-color: #C2C7D0
+                border-bottom-color: #F8F8F8
+                color: #39424E
+                background: #FFF
+                background-image: linear-gradient(top, #FFF 70%, #F8F8F8)
+                padding-bottom: 21px
+        
+        a
+            padding: 10px 30px 20px
+            border: 1px solid #F8F8F8
+            color: #979FAF
+            transition: 0.3s color ease
+            font-weight: bold
+
+            &.icon
+                &:before
+                    font-weight: bold
+                    margin-right: 8px
+
+            &:hover
+                color: #39424E
 
 #nav
     background: #39424E
@@ -123,11 +214,15 @@ a
     top: 0
 
     .logo
+        margin-left: 10px
         font-size: 18px
         color: #FFF
         text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5)
         font-weight: bold
         line-height: $nav-height
+
+        .icon
+            margin-right: 6px
 
         span
             color: #2BC56D
@@ -179,42 +274,10 @@ a
 #content
     padding: ($nav-height + 20) 20px 20px ($sidebar-width + 20)
 
-    #tabs
-        background: #F8F8F8
-        border: 1px solid #C2C7D0
-        margin: 20px 0
-        padding: 20px 20px 18px 20px
-
-        li
-            display: inline-block
-
-            &.active
-                a
-                    border-color: #C2C7D0
-                    border-bottom-color: #FFF
-                    color: #39424E
-                    background: #FFF
-                    padding-bottom: 21px
-            
-            a
-                padding: 10px 30px 20px
-                border: 1px solid #F8F8F8
-                color: #979FAF
-                transition: 0.3s color ease
-                font-weight: bold
-
-                &.icon
-                    &:before
-                        font-weight: bold
-                        margin-right: 8px
-
-                &:hover
-                    color: #39424E
-
 #editor
     background: #F8F8F8
     border: 1px solid #C2C7D0
-    margin: 0 20px
+    border-top: 0
 
     .header
         padding: 10px 20px
@@ -227,6 +290,9 @@ a
         .icon
             &:before
                 margin-right: 8px
+
+        .select
+            float: right
 
     .content
         .CodeMirror-lines

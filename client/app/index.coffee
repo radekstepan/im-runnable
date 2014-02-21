@@ -3,7 +3,7 @@ render = require './modules/render'
 layout = require './templates/layout'
 
 components = [
-
+    'select'
 ]
 
 module.exports = (opts) ->
@@ -16,7 +16,7 @@ module.exports = (opts) ->
     # Setup the editor.
     CodeMirror $('#editor .content').get(0),
         'mode':           'javascript'
-        'theme':          'default'
+        'theme':          'github'
         'lineNumbers':    yes
         'viewportMargin': +Infinity
         'value': """

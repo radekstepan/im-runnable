@@ -30240,6 +30240,24 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
   // All our modules will use global require.
   (function() {
     
+    // select.coffee
+    root.require.register('runnable/client/app/components/select.js', function(exports, require, module) {
+    
+      module.exports = can.Component.extend({
+        tag: 'app-select',
+        template: require('../templates/select'),
+        events: {
+          '.field click': function(el, evt) {
+            var icon;
+            this.element.find('.select').toggleClass('expanded');
+            (icon = el.find('.icon')).toggleClass('down-dir up-dir');
+            return this.element.find('.dropdown').toggle();
+          }
+        }
+      });
+      
+    });
+
     // index.coffee
     root.require.register('runnable/client/app/index.js', function(exports, require, module) {
     
@@ -30249,7 +30267,7 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
       
       layout = require('./templates/layout');
       
-      components = [];
+      components = ['select'];
       
       module.exports = function(opts) {
         var name, _i, _len;
@@ -30260,7 +30278,7 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
         $(opts.el).html(render(layout));
         CodeMirror($('#editor .content').get(0), {
           'mode': 'javascript',
-          'theme': 'default',
+          'theme': 'github',
           'lineNumbers': true,
           'viewportMargin': +Infinity,
           'value': "// Require the Request library.\nvar req = require('request');\n\n// Search against FlyMine.\nreq({\n    'uri': 'http://www.flymine.org/query/service/search',\n    // For terms associated with \"micklem\".\n    'qs': { 'q': \"micklem\" }\n}, function(err, res) {\n    if (err) throw err;\n\n    // Just log it.\n    console.log(res.body);\n});"
@@ -30292,7 +30310,13 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
     // layout.mustache
     root.require.register('runnable/client/app/templates/layout.js', function(exports, require, module) {
     
-      module.exports = ["<div id=\"nav\" class=\"row\">","    <div class=\"small-12 large-4 columns\">","        <a class=\"logo\" href=\"/\">InterMine <span>Runnable</span></a>","    </div>","    <div class=\"small-12 large-8 columns\">","        <a class=\"btn dark right\">Log in</a>","    </div>","</div>","","<div id=\"sidebar\">","    <ul>","        <li><a class=\"icon clipboard\">Browse Scripts</a></li>","        <li><a class=\"icon book\">API Documentation</a></li>","        <li><a class=\"icon help\">Help</a></li>","    </ul>","</div>","","<div id=\"content\">","    <div class=\"row\">","        <div class=\"header small-12 columns\">","            <h1>Search a mine by keyword</h1>","            <p>Developed by the Micklem lab at the University of Cambridge, InterMine","                enables the creation of biological databases accessed by sophisticated","                web query tools. Parsers are provided for integrating data from many","                common biological data sources and formats, and there is a framework","                for adding your own data.</p>","        </div>","    </div>","","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <ul id=\"tabs\">","                <li class=\"active\"><a class=\"icon code\">Editor</a></li>","                <li><a class=\"icon terminal\">Results</a></li>","                <li><a class=\"icon comment\">Discussion</a></li>","            </ul>","        </div>","    </div>","","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <div id=\"editor\">","                <div class=\"header collapse row\">","                    <div class=\"small-12 large-6 columns\">","                        <a class=\"btn main icon rocket\">Run</a>","                        <a class=\"btn secondary disabled\">Save</a>","                    </div>","                    <div class=\"small-12 large-6 columns\">","                        <div class=\"select\">","                            <span>Node.js</span>","                            <div class=\"icon down-dir\"></div>","                        </div>","                    </div>","                </div>","                <div class=\"collapse row\">","                    <div class=\"small-12 columns\">","                        <div class=\"content\"></div>","                    </div>","                </div>","                <div class=\"collapse row\">","                    <div class=\"small-12 columns\">","                        <div class=\"footer\">","                            Line: 59 Col: 8","                        </div>","                    </div>","                </div>","            </div>","        </div>","    </div>","</div>","","<div id=\"footer\">","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <p>This is a beta version.</p>","            <ul>","                <li><a href=\"#\">Browse Scripts</a></li>","                <li><a href=\"#\">API Documentation</a></li>","                <li><a href=\"#\">Help</a></li>","            </ul>","        </div>","    </div>","</div>"].join("\n");
+      module.exports = ["<div id=\"nav\" class=\"row\">","    <div class=\"small-12 large-4 columns\">","        <a class=\"logo\" href=\"/\"><span class=\"icon rocket\"></span> InterMine <span>Runnable</span></a>","    </div>","    <div class=\"small-12 large-8 columns\">","        <a class=\"btn dark right\">Log in</a>","    </div>","</div>","","<div id=\"sidebar\">","    <ul>","        <li><a class=\"icon clipboard\">Browse Scripts</a></li>","        <li><a class=\"icon book\">API Documentation</a></li>","        <li><a class=\"icon help\">Help</a></li>","    </ul>","</div>","","<div id=\"content\">","    <div class=\"row\">","        <div class=\"header small-12 columns\">","            <h1>Search a mine by keyword</h1>","            <p>Developed by the Micklem lab at the University of Cambridge, InterMine","                enables the creation of biological databases accessed by sophisticated","                web query tools. Parsers are provided for integrating data from many","                common biological data sources and formats, and there is a framework","                for adding your own data.</p>","        </div>","    </div>","","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <ul class=\"tabs\">","                <li class=\"active\"><a class=\"icon code\">Editor</a></li>","                <li><a class=\"icon terminal\">Results</a></li>","                <li><a class=\"icon comment\">Discussion</a></li>","            </ul>","        </div>","    </div>","","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <div id=\"editor\">","                <div class=\"header collapse row\">","                    <div class=\"small-12 large-6 columns\">","                        <a class=\"btn main icon rocket\">Run</a>","                        <a class=\"btn secondary disabled\">Save</a>","                    </div>","                    <div class=\"small-12 large-6 columns\">","                        <app-select></app-select>","                    </div>","                </div>","                <div class=\"collapse row\">","                    <div class=\"small-12 columns\">","                        <div class=\"content\"></div>","                    </div>","                </div>","                <div class=\"collapse row\">","                    <div class=\"small-12 columns\">","                        <div class=\"footer\">","                            Line: 59 Col: 8","                        </div>","                    </div>","                </div>","            </div>","        </div>","    </div>","</div>","","<div id=\"footer\">","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <p>This is a beta version.</p>","            <ul>","                <li><a href=\"#\">Browse Scripts</a></li>","                <li><a href=\"#\">API Documentation</a></li>","                <li><a href=\"#\">Help</a></li>","            </ul>","        </div>","    </div>","</div>"].join("\n");
+    });
+
+    // select.mustache
+    root.require.register('runnable/client/app/templates/select.js', function(exports, require, module) {
+    
+      module.exports = ["<div class=\"select\">","    <div class=\"field\">","        <span>JavaScript (Node.js)</span>","        <div class=\"icon down-dir\"></div>","    </div>","    <div class=\"dropdown\">","        <div class=\"search\">","            <span class=\"icon search\"></span>","            <input class=\"input\" type=\"text\" autocomplete=\"off\" spellcheck=\"off\" />","        </div>","        <ul class=\"options\">","            <li>Java</li>","            <li class=\"active\">JavaScript (Node.js)</li>","            <li>Perl</li>","            <li>Python</li>","            <li>Ruby</li>","        </ul>","    </div>","</div>"].join("\n");
     });
   })();
 
