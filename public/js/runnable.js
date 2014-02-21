@@ -230,24 +230,19 @@
           };
         },
         events: {
-          init: function(el) {
-            return setTimeout(function() {
-              editor = CodeMirror(el.find('.content').get(0), {
-                'mode': 'javascript',
-                'theme': 'github',
-                'lineNumbers': true,
-                'viewportMargin': +Infinity,
-                'value': "// Require the Request library.\nvar req = require('request');\n\n// Search against FlyMine.\nreq({\n    'uri': 'http://www.flymine.org/query/service/search',\n    // For terms associated with \"micklem\".\n    'qs': { 'q': \"micklem\" }\n}, function(err, res) {\n    if (err) throw err;\n\n    // Just log it.\n    console.log(res.body);\n});"
-              });
-              return editor.on('cursorActivity', function(instance) {
-                return cursor.attr(_.transform(editor.getCursor(), function(res, val, key) {
-                  return res[key] = val + 1;
-                }), true);
-              });
-            }, 0);
-          },
-          inserted: function() {
-            return console.log('inserted');
+          inserted: function(el) {
+            editor = CodeMirror(el.find('.content').get(0), {
+              'mode': 'javascript',
+              'theme': 'github',
+              'lineNumbers': true,
+              'viewportMargin': +Infinity,
+              'value': "// Require the Request library.\nvar req = require('request');\n\n// Search against FlyMine.\nreq({\n    'uri': 'http://www.flymine.org/query/service/search',\n    // For terms associated with \"micklem\".\n    'qs': { 'q': \"micklem\" }\n}, function(err, res) {\n    if (err) throw err;\n\n    // Just log it.\n    console.log(res.body);\n});"
+            });
+            return editor.on('cursorActivity', function(instance) {
+              return cursor.attr(_.transform(editor.getCursor(), function(res, val, key) {
+                return res[key] = val + 1;
+              }), true);
+            });
           }
         }
       });
