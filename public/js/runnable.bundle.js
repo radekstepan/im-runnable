@@ -30240,6 +30240,48 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
   // All our modules will use global require.
   (function() {
     
+    // editor.coffee
+    root.require.register('runnable/client/app/components/editor.js', function(exports, require, module) {
+    
+      var cursor, editor;
+      
+      editor = null;
+      
+      cursor = new can.Map({
+        'line': 1,
+        'ch': 1
+      });
+      
+      module.exports = can.Component.extend({
+        tag: 'app-editor',
+        template: require('../templates/editor'),
+        scope: function(obj, parent, el) {
+          return {
+            cursor: cursor
+          };
+        },
+        events: {
+          init: function(el) {
+            return setTimeout(function() {
+              editor = CodeMirror(el.find('.content').get(0), {
+                'mode': 'javascript',
+                'theme': 'github',
+                'lineNumbers': true,
+                'viewportMargin': +Infinity,
+                'value': "// Require the Request library.\nvar req = require('request');\n\n// Search against FlyMine.\nreq({\n    'uri': 'http://www.flymine.org/query/service/search',\n    // For terms associated with \"micklem\".\n    'qs': { 'q': \"micklem\" }\n}, function(err, res) {\n    if (err) throw err;\n\n    // Just log it.\n    console.log(res.body);\n});"
+              });
+              return editor.on('cursorActivity', function(instance) {
+                return cursor.attr(_.transform(editor.getCursor(), function(res, val, key) {
+                  return res[key] = val + 1;
+                }), true);
+              });
+            }, 0);
+          }
+        }
+      });
+      
+    });
+
     // select.coffee
     root.require.register('runnable/client/app/components/select.js', function(exports, require, module) {
     
@@ -30267,7 +30309,7 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
       
       layout = require('./templates/layout');
       
-      components = ['select'];
+      components = ['editor', 'select'];
       
       module.exports = function(opts) {
         var name, _i, _len;
@@ -30276,13 +30318,6 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
           require("./components/" + name);
         }
         $(opts.el).html(render(layout));
-        CodeMirror($('#editor .content').get(0), {
-          'mode': 'javascript',
-          'theme': 'github',
-          'lineNumbers': true,
-          'viewportMargin': +Infinity,
-          'value': "// Require the Request library.\nvar req = require('request');\n\n// Search against FlyMine.\nreq({\n    'uri': 'http://www.flymine.org/query/service/search',\n    // For terms associated with \"micklem\".\n    'qs': { 'q': \"micklem\" }\n}, function(err, res) {\n    if (err) throw err;\n\n    // Just log it.\n    console.log(res.body);\n});"
-        });
         return (function() {
           var height, sidebar;
           height = $('#nav').outerHeight();
@@ -30307,10 +30342,16 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
       
     });
 
+    // editor.mustache
+    root.require.register('runnable/client/app/templates/editor.js', function(exports, require, module) {
+    
+      module.exports = ["<div id=\"editor\">","    <div class=\"header collapse row\">","        <div class=\"small-12 large-6 columns\">","            <a class=\"btn main icon rocket\">Run</a>","            <a class=\"btn secondary disabled\">Save</a>","        </div>","        <div class=\"small-12 large-6 columns\">","            <span class=\"icon lock right\"></span>","            <span class=\"icon cog right\"></span>","            <app-select class=\"right\"></app-select>","        </div>","    </div>","    <div class=\"collapse row\">","        <div class=\"small-12 columns\">","            <div class=\"content\"></div>","        </div>","    </div>","    <div class=\"collapse row\">","        <div class=\"small-12 columns\">","            <div class=\"footer\">","                Line: {{ cursor.line }} Col: {{ cursor.ch }}","            </div>","        </div>","    </div>","</div>"].join("\n");
+    });
+
     // layout.mustache
     root.require.register('runnable/client/app/templates/layout.js', function(exports, require, module) {
     
-      module.exports = ["<div id=\"nav\" class=\"row\">","    <div class=\"small-12 large-4 columns\">","        <a class=\"logo\" href=\"/\"><span class=\"icon rocket\"></span> InterMine <span>Runnable</span></a>","    </div>","    <div class=\"small-12 large-8 columns\">","        <a class=\"btn dark right\">Log in</a>","    </div>","</div>","","<div id=\"sidebar\">","    <ul>","        <li><a class=\"icon clipboard\">Browse Scripts</a></li>","        <li><a class=\"icon book\">API Documentation</a></li>","        <li><a class=\"icon help\">Help</a></li>","    </ul>","</div>","","<div id=\"content\">","    <div class=\"row\">","        <div class=\"header small-12 columns\">","            <h1>Search a mine by keyword</h1>","            <p>Developed by the Micklem lab at the University of Cambridge, InterMine","                enables the creation of biological databases accessed by sophisticated","                web query tools. Parsers are provided for integrating data from many","                common biological data sources and formats, and there is a framework","                for adding your own data.</p>","        </div>","    </div>","","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <ul class=\"tabs\">","                <li class=\"active\"><a class=\"icon code\">Editor</a></li>","                <li><a class=\"icon terminal\">Results</a></li>","                <li><a class=\"icon comment\">Discussion</a></li>","            </ul>","        </div>","    </div>","","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <div id=\"editor\">","                <div class=\"header collapse row\">","                    <div class=\"small-12 large-6 columns\">","                        <a class=\"btn main icon rocket\">Run</a>","                        <a class=\"btn secondary disabled\">Save</a>","                    </div>","                    <div class=\"small-12 large-6 columns\">","                        <span class=\"icon lock right\"></span>","                        <span class=\"icon cog right\"></span>","                        <app-select class=\"right\"></app-select>","                    </div>","                </div>","                <div class=\"collapse row\">","                    <div class=\"small-12 columns\">","                        <div class=\"content\"></div>","                    </div>","                </div>","                <div class=\"collapse row\">","                    <div class=\"small-12 columns\">","                        <div class=\"footer\">","                            Line: 59 Col: 8","                        </div>","                    </div>","                </div>","            </div>","        </div>","    </div>","</div>","","<div id=\"footer\">","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <p>This is a beta version.</p>","            <ul>","                <li><a href=\"#\">Browse Scripts</a></li>","                <li><a href=\"#\">API Documentation</a></li>","                <li><a href=\"#\">Help</a></li>","            </ul>","        </div>","    </div>","</div>"].join("\n");
+      module.exports = ["<div id=\"nav\" class=\"row\">","    <div class=\"small-12 large-4 columns\">","        <a class=\"logo\" href=\"/\"><span class=\"icon rocket\"></span> InterMine <span>Runnable</span></a>","    </div>","    <div class=\"small-12 large-8 columns\">","        <a class=\"btn dark right\">Log in</a>","    </div>","</div>","","<div id=\"sidebar\">","    <ul>","        <li><a class=\"icon clipboard\">Browse Scripts</a></li>","        <li><a class=\"icon book\">API Documentation</a></li>","        <li><a class=\"icon help\">Help</a></li>","    </ul>","</div>","","<div id=\"content\">","    <div class=\"row\">","        <div class=\"header small-12 columns\">","            <h1>Search a mine by keyword</h1>","            <p>Developed by the Micklem lab at the University of Cambridge, InterMine","                enables the creation of biological databases accessed by sophisticated","                web query tools. Parsers are provided for integrating data from many","                common biological data sources and formats, and there is a framework","                for adding your own data.</p>","        </div>","    </div>","","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <ul class=\"tabs\">","                <li class=\"active\"><a class=\"icon code\">Editor</a></li>","                <li><a class=\"icon terminal\">Results</a></li>","                <li><a class=\"icon comment\">Discussion</a></li>","            </ul>","        </div>","    </div>","","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <app-editor></app-editor>","        </div>","    </div>","</div>","","<div id=\"footer\">","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <p>This is a beta version.</p>","            <ul>","                <li><a href=\"#\">Browse Scripts</a></li>","                <li><a href=\"#\">API Documentation</a></li>","                <li><a href=\"#\">Help</a></li>","            </ul>","        </div>","    </div>","</div>"].join("\n");
     });
 
     // select.mustache

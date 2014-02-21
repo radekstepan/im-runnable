@@ -90,20 +90,22 @@ a
             box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(255, 255, 255, 0.75)
 
 .select
-    padding: 10px 20px 10px 10px
-    font-weight: 700
-    background: #FFF
-    border-radius: 4px
-    border: 1px solid #B4BAC5
-    width: $select-width
     position: relative
-    user-select: none
-    cursor: pointer
-
+    
     &.expanded
-        border-radius: 4px 4px 0 0
+        .field
+            border-radius: 4px 4px 0 0
 
     .field
+        border-radius: 4px
+        padding: 10px 20px 10px 10px
+        font-weight: 700
+        background: #FFF
+        border: 1px solid #B4BAC5
+        width: $select-width
+        user-select: none
+        cursor: pointer        
+
         .icon
             width: 36px
             height: 100%
@@ -126,8 +128,8 @@ a
         display: none
         width: $select-width
         position: absolute
-        top: 36px
-        left: -1px
+        top: 37px
+        left: 0
         z-index: 100
         background: #FFF
         border: 1px solid #C2C7D0
