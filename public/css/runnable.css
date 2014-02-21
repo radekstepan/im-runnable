@@ -17,6 +17,7 @@ a{color:#3e96da}
 .btn.main:active{background:#1ab45c;border-color:#548700;-webkit-box-shadow:inset 0 1px 2px rgba(0,0,0,0.1),0 1px 2px rgba(255,255,255,0.75);box-shadow:inset 0 1px 2px rgba(0,0,0,0.1),0 1px 2px rgba(255,255,255,0.75)}
 .select{position:relative;}
 .select.expanded .field{-webkit-border-radius:4px 4px 0 0;border-radius:4px 4px 0 0}
+.select.expanded .dropdown{display:block}
 .select .field{-webkit-border-radius:4px;border-radius:4px;padding:10px 20px 10px 10px;font-weight:700;background:#fff;border:1px solid #b4bac5;width:220px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;}
 .select .field .icon{width:36px;height:100%;position:absolute;top:0;right:0;border-left:1px solid #c2c7d0;-webkit-border-radius:0 4px 4px 0;border-radius:0 4px 4px 0;background:rgba(0,0,0,0);background-image:gradient(linear,left bottom,left top,color-stop(0,#f5f5f5),color-stop(.5,#fff));-webkit-box-shadow:0 1px 3px rgba(0,0,0,0.08),inset 0 -1px 4px rgba(151,159,175,0.2);box-shadow:0 1px 3px rgba(0,0,0,0.08),inset 0 -1px 4px rgba(151,159,175,0.2);}
 .select .field .icon:before{position:absolute;top:10px;right:10px}
@@ -26,6 +27,7 @@ a{color:#3e96da}
 .select .dropdown .search .input{border:1px solid #c2c7d0;height:auto;outline:0;margin:0 0 4px 0;padding-right:24px;}
 .select .dropdown .search .input:focus{background:#fff;-webkit-box-shadow:0 0 5px rgba(62,150,218,0.5),inset 0 1px 2px rgba(151,159,175,0.2),inset 0 1px 15px rgba(151,159,175,0.05);box-shadow:0 0 5px rgba(62,150,218,0.5),inset 0 1px 2px rgba(151,159,175,0.2),inset 0 1px 15px rgba(151,159,175,0.05);border:1px solid rgba(62,150,218,0.7)}
 .select .dropdown .options{list-style-type:none;margin:0;font-weight:normal;overflow-x:hidden;overflow-y:auto;max-height:100px;}
+.select .dropdown .options:hover .active:not(:hover){color:inherit;background:inherit}
 .select .dropdown .options li{cursor:pointer;padding:2px 10px;}
 .select .dropdown .options li:hover,.select .dropdown .options li.active{color:#fff;background:#2bc56d}
 .tabs{background:#f8f8f8;border:1px solid #c2c7d0;margin:20px 0;padding:20px 20px 18px 20px;}

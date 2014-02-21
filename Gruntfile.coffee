@@ -4,7 +4,7 @@ module.exports = (grunt) ->
         
         apps_c:
             commonjs:
-                src: [ 'client/app/**/*.{coffee,js,eco,mustache}' ]
+                src: [ 'client/app/**/*.{coffee,js,eco,mustache,json}' ]
                 dest: 'public/js/runnable.js'
                 options:
                     main: 'client/app/index.coffee'

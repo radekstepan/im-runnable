@@ -48,3 +48,6 @@ module.exports = can.Component.extend
                         res[key] = val + 1
                     ), yes
             , 0
+
+        inserted: ->
+            console.log 'inserted'

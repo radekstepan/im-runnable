@@ -96,6 +96,9 @@ a
         .field
             border-radius: 4px 4px 0 0
 
+        .dropdown
+            display: block
+
     .field
         border-radius: 4px
         padding: 10px 20px 10px 10px
@@ -165,6 +168,11 @@ a
             overflow-x: hidden
             overflow-y: auto
             max-height: 100px
+
+            &:hover
+                .active:not(:hover)
+                    color: inherit
+                    background: inherit
 
             li
                 cursor: pointer

@@ -30276,6 +30276,9 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
                 }), true);
               });
             }, 0);
+          },
+          inserted: function() {
+            return console.log('inserted');
           }
         }
       });
@@ -30285,15 +30288,47 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
     // select.coffee
     root.require.register('runnable/client/app/components/select.js', function(exports, require, module) {
     
+      var config, expanded, languages;
+      
+      languages = require('../models/languages');
+      
+      config = require('../models/config');
+      
+      _.find(languages, function(lang) {
+        if (config.default_language !== lang.key) {
+          return;
+        }
+        return lang.active = true;
+      });
+      
+      languages = new can.List(languages);
+      
+      expanded = can.compute(false);
+      
       module.exports = can.Component.extend({
         tag: 'app-select',
         template: require('../templates/select'),
+        scope: function(obj, parent, el) {
+          return {
+            languages: languages,
+            'expanded': {
+              'value': expanded
+            },
+            'select': function(obj) {
+              var key, label, lang, _i, _len, _ref;
+              for (_i = 0, _len = languages.length; _i < _len; _i++) {
+                lang = languages[_i];
+                lang.attr('active', false);
+              }
+              _ref = obj.attr(), key = _ref.key, label = _ref.label;
+              obj.attr('active', true);
+              return expanded(false);
+            }
+          };
+        },
         events: {
           '.field click': function(el, evt) {
-            var icon;
-            this.element.find('.select').toggleClass('expanded');
-            (icon = el.find('.icon')).toggleClass('down-dir up-dir');
-            return this.element.find('.dropdown').toggle();
+            return expanded(!expanded());
           }
         }
       });
@@ -30330,6 +30365,37 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
       
     });
 
+    // config.json
+    root.require.register('runnable/client/app/models/config.js', function(exports, require, module) {
+    
+      module.exports = {
+          "default_language": "node"
+      };
+    });
+
+    // languages.json
+    root.require.register('runnable/client/app/models/languages.js', function(exports, require, module) {
+    
+      module.exports = [
+          {
+              "key": "java",
+              "label": "Java"
+          }, {
+              "key": "node",
+              "label": "JavaScript (Node.js)"
+          }, {
+              "key": "perl",
+              "label": "Perl"
+          }, {
+              "key": "python",
+              "label": "Python"
+          }, {
+              "key": "ruby",
+              "label": "Ruby"
+          }
+      ];
+    });
+
     // render.coffee
     root.require.register('runnable/client/app/modules/render.js', function(exports, require, module) {
     
@@ -30357,7 +30423,7 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
     // select.mustache
     root.require.register('runnable/client/app/templates/select.js', function(exports, require, module) {
     
-      module.exports = ["<div class=\"select\">","    <div class=\"field\">","        <span>JavaScript (Node.js)</span>","        <div class=\"icon down-dir\"></div>","    </div>","    <div class=\"dropdown\">","        <div class=\"search\">","            <span class=\"icon search\"></span>","            <input class=\"input\" type=\"text\" autocomplete=\"off\" spellcheck=\"off\" />","        </div>","        <ul class=\"options\">","            <li>Java</li>","            <li class=\"active\">JavaScript (Node.js)</li>","            <li>Perl</li>","            <li>Python</li>","            <li>Ruby</li>","        </ul>","    </div>","</div>"].join("\n");
+      module.exports = ["<div class=\"select {{ #if expanded.value }}expanded{{ /if }}\">","    <div class=\"field\">","        <span>{{ #languages }}{{ #if active }}{{ label }}{{ /if }}{{ /languages }}</span>","        {{ #if expanded.value }}","            <div class=\"icon up-dir\"></div>","        {{ else }}","            <div class=\"icon down-dir\"></div>","        {{ /if }}","    </div>","    <div class=\"dropdown\">","        <div class=\"search\">","            <span class=\"icon search\"></span>","            <input class=\"input\" type=\"text\" autocomplete=\"off\" spellcheck=\"off\" />","        </div>","        <ul class=\"options\">","            {{ #languages }}","                <li can-click=\"select\" {{ #if active }}class=\"active\"{{ /if }}>{{ label }}</li>","            {{ /languages }}","        </ul>","    </div>","</div>"].join("\n");
     });
   })();
 
