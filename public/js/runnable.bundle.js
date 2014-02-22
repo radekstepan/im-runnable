@@ -30541,6 +30541,20 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
           };
         },
         events: {
+          '.btn.run click': function() {
+            return $.ajax('/api/run', {
+              'contentType': 'application/json',
+              'type': 'POST',
+              'data': JSON.stringify({
+                'src': editor.getValue(),
+                'lang': editor.getOption('mode')
+              })
+            }).done(function(res) {
+              return console.log(res);
+            }).fail(function(err) {
+              throw err;
+            });
+          },
           inserted: function(el) {
             editor = CodeMirror(el.find('.content').get(0), {
               'mode': db.attr('language'),
@@ -30803,7 +30817,7 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
     // editor.mustache
     root.require.register('runnable/client/templates/editor.js', function(exports, require, module) {
     
-      module.exports = ["<div id=\"editor\">","    <div class=\"header collapse row\">","        <div class=\"small-12 large-6 columns\">","            <a class=\"btn main icon rocket\">Run</a>","            <a class=\"btn disabled\">Save</a>","        </div>","        <div class=\"small-12 large-6 columns\">","            <span class=\"icon lock right\"></span>","            <span class=\"icon cog right\"></span>","            <app-select class=\"right\"></app-select>","        </div>","    </div>","    <div class=\"collapse row\">","        <div class=\"small-12 columns\">","            <div class=\"content\"></div>","        </div>","    </div>","    <div class=\"collapse row\">","        <div class=\"small-12 columns\">","            <div class=\"footer\">","                Line: {{ cursor.line }} Col: {{ cursor.ch }}","            </div>","        </div>","    </div>","</div>"].join("\n");
+      module.exports = ["<div id=\"editor\">","    <div class=\"header collapse row\">","        <div class=\"small-12 large-6 columns\">","            <a class=\"btn main run icon rocket\">Run</a>","            <a class=\"btn disabled\">Save</a>","        </div>","        <div class=\"small-12 large-6 columns\">","            <span class=\"icon lock right\"></span>","            <span class=\"icon cog right\"></span>","            <app-select class=\"right\"></app-select>","        </div>","    </div>","    <div class=\"collapse row\">","        <div class=\"small-12 columns\">","            <div class=\"content\"></div>","        </div>","    </div>","    <div class=\"collapse row\">","        <div class=\"small-12 columns\">","            <div class=\"footer\">","                Line: {{ cursor.line }} Col: {{ cursor.ch }}","            </div>","        </div>","    </div>","</div>"].join("\n");
     });
 
     // layout.mustache

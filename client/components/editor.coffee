@@ -22,6 +22,19 @@ module.exports = can.Component.extend
         { cursor }
 
     events:
+        # Run.
+        '.btn.run click': ->
+            $.ajax('/api/run',
+                'contentType' : 'application/json'
+                'type' : 'POST'
+                'data': JSON.stringify
+                    'src':  do editor.getValue
+                    'lang': editor.getOption('mode')
+            ).done( (res) ->
+                console.log res
+            ).fail (err) ->
+                throw err
+
         inserted: (el) ->
             # Setup the editor.
             editor = CodeMirror el.find('.content').get(0),

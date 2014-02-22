@@ -47,8 +47,8 @@ client = restify.createJsonClient
     'url': 'http://0.0.0.0:5000'
 
 client.post '/api/run',
-    'cmd': 'node'
-    'src': 'console.log(3*6)'
+    'lang': 'javascript'
+    'src':  'console.log(3*6)'
 , (err, req, res, body) ->
     throw err if err
 

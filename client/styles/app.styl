@@ -2,7 +2,7 @@
 
 $nav-height      = 60px
 $sidebar-width   = 70px
-$highlight-color = #2bc56d
+$highlight-color = #26B061
 $select-width    = 220px
 
 body, h1, h2, h3, h4, h5
@@ -72,8 +72,8 @@ a
 
     &.main, &.green, &.success
         color: #FFF
-        border-color: #089243
-        border-bottom-color: #008233
+        border-color: darken($highlight-color, 26%)
+        border-bottom-color: darken($highlight-color, 30%)
         background: linear-gradient(top, $highlight-color, darken($highlight-color, 14%))
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1), inset 0 -1px 4px rgba(29, 134, 74, 0.3)
         font-weight: 700
@@ -84,7 +84,7 @@ a
 
         &:active
             background: darken($highlight-color, 18%)
-            border-color: #548700
+            border-color: darken(desaturate($highlight-color, 60%), 20%)
             box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(255, 255, 255, 0.75)
 
     &.alert, &.red

@@ -37,14 +37,17 @@ server.post '/api/run', (req, res, next) ->
     token = req.headers?.authorization
 
     # Validate params.
-    { cmd, src } = req.params
-    unless cmd and src
-        res.send new restify.MissingParameterError '`cmd` and `src` need to be provided'
+    { lang, src } = req.params
+    unless lang and src
+        res.send new restify.MissingParameterError '`lang` and `src` need to be provided'
         do next
 
-    unless cmd in _.pluck config.languages, 'key'
-        res.send new restify.InvalidArgumentError "#{cmd} is not supported"
+    unless lang in _.pluck config.languages, 'key'
+        res.send new restify.InvalidArgumentError "#{lang} is not supported"
         do next
+
+    # Form the command.
+    { cmd } = _.find config.languages, { 'key': lang }
 
     # Run it and get the output.
     runner { cmd, src }, (err, out) ->
