@@ -2,7 +2,7 @@
 
 $nav-height      = 60px
 $sidebar-width   = 70px
-$highlight-color = #2BC56D
+$highlight-color = #2bc56d
 $select-width    = 220px
 
 body, h1, h2, h3, h4, h5
@@ -43,11 +43,11 @@ a
     border: 1px solid #C2C7D0
     border-bottom-color: #B4BAC5
     user-select: none
-    background-image: linear-gradient(top, #FFF, #F5F5F5)
+    background: linear-gradient(top, #FFF, #F5F5F5)
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), inset 0 -1px 4px rgba(151, 159, 175, 0.2)
 
     &:hover
-        background-image: linear-gradient(top, #FFF, #F0F0F0)
+        background: linear-gradient(top, #FFF, #F0F0F0)
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), inset 0 -1px 4px rgba(151, 159, 175, 0.2)
         color: inherit
 
@@ -66,7 +66,7 @@ a
         color: #FFF
         border: 1px solid #252A32
         text-transform: uppercase
-        background-image: linear-gradient(top, #39424E, #303741)
+        background: linear-gradient(top, #39424E, #303741)
         box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.15),0 1px 3px rgba(0, 0, 0, 0.1)
         text-shadow: 1px 1px rgba(0,0,0,0.8)
 
@@ -74,18 +74,16 @@ a
         color: #FFF
         border-color: #089243
         border-bottom-color: #008233
-        background: #2BC56D
-        background-image: linear-gradient(top, #2BC56D, #26B061)
+        background: linear-gradient(top, $highlight-color, darken($highlight-color, 14%))
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1), inset 0 -1px 4px rgba(29, 134, 74, 0.3)
         font-weight: 700
 
         &:hover
-            background-color: #26AC5F
-            background-image: linear-gradient(top, #2BC56D, #26AC5F)
+            background: linear-gradient(top, $highlight-color, darken($highlight-color, 20%))
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.1), inset 0 -1px 6px rgba(29, 134, 74, 0.4)
 
         &:active
-            background: #1AB45C
+            background: darken($highlight-color, 18%)
             border-color: #548700
             box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(255, 255, 255, 0.75)
 
@@ -94,8 +92,7 @@ a
 
         &:hover
             color: #FFF
-            background-color: #f1270b
-            background-image: linear-gradient(top, #f65039, #f1270b)
+            background: linear-gradient(top, #f65039, #f1270b)
             border-color: #c01f09
 
         &:active
@@ -132,8 +129,7 @@ a
             right: 0
             border-left: 1px solid #C2C7D0
             border-radius: 0 4px 4px 0
-            background: rgba(0, 0, 0, 0)
-            background-image: gradient(linear, left bottom, left top, color-stop(0, #F5F5F5), color-stop(0.5, #FFF))
+            background: gradient(linear, left bottom, left top, color-stop(0, #F5F5F5), color-stop(0.5, #FFF))
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), inset 0 -1px 4px rgba(151, 159, 175, 0.2)
             
             &:before
@@ -198,10 +194,9 @@ a
                     background: $highlight-color
 
 .tabs
-    background: #F8F8F8
-    border: 1px solid #C2C7D0
+    border-bottom: 1px solid #C2C7D0
     margin: 20px 0
-    padding: 20px 20px 18px 20px
+    padding-bottom: 10px
 
     li
         display: inline-block
@@ -209,18 +204,19 @@ a
         &.active
             a
                 border-color: #C2C7D0
-                border-bottom-color: #F8F8F8
-                color: #39424E
-                background: #FFF
-                background-image: linear-gradient(top, #FFF 70%, #F8F8F8)
+                border-bottom-color: #F3F1F1
+                color: $highlight-color
+                background: #F3F1F1
                 padding-bottom: 21px
         
         a
-            padding: 10px 30px 20px
-            border: 1px solid #F8F8F8
+            padding: 10px 30px 13px
+            border: 1px solid #F3F1F1
+            border-bottom: 0
             color: #979FAF
             transition: 0.3s color ease
             font-weight: bold
+            user-select: none
 
             &.icon
                 &:before
@@ -228,32 +224,22 @@ a
                     margin-right: 8px
 
             &:hover
-                color: #39424E
+                color: #32383D
 
 #nav
-    background: #39424E
+    background: #32383D
     height: $nav-height
     border-bottom: 1px solid #28313D
-    z-index: 101
-    position: absolute
-    top: 0
 
-    .logo
-        margin-left: 10px
-        font-size: 18px
+    .title
+        text-align: center
         color: #FFF
-        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5)
         font-weight: bold
         line-height: $nav-height
-
-        .icon
-            margin-right: 6px
-
-        span
-            color: #2BC56D
+        font-size: 20px
 
     .btn
-        margin: 10px 0
+        margin: 10px 20px
 
 #sidebar
     position: fixed
@@ -263,45 +249,58 @@ a
     overflow: hidden
     width: $sidebar-width
     z-index: 100
-    transition: width 0.2s ease
-    background: #2E363F
-    border-right: 1px solid #17202C
+    transition: width 0.2s ease-in-out
+    background: rgba(255,255,255,0.92)
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2)
+    user-select: none
+    font-weight: bold
 
     &:hover
         width: 260px
-        box-shadow: 1px 0 5px rgba(23, 32, 44, 0.4)
+
+        .home
+            width: 260px
+
+    .home
+        width: $sidebar-width
+        background: #2D3237
+        color: $highlight-color
+        line-height: $nav-height
+        display: block
+        border-right: 1px solid #2D3237
+        white-space: nowrap
+        transition: width 0.2s ease-in-out
+
+        &:before
+            width: $sidebar-width
 
     ul
         list-style-type: none
-        padding-top: 10px
-        margin: $nav-height 0 0 0
-        user-select: none
+        margin: 0
 
         li
             white-space: nowrap
 
             a
                 padding: 10px 0
-                text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5)
                 transition: all 0.3s ease
-                color: #FFF
+                color: #979da2
                 display: block
 
                 &:before
                     width: $sidebar-width
-                    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5)
 
                 &:hover
-                    background: #232931
-
-                    &:before
-                        color: #2BC56D
+                    color: #565A5E
 
 #content
-    padding: ($nav-height + 20) 20px 20px ($sidebar-width + 20)
+    padding: 20px 20px 20px ($sidebar-width + 20)
+
+    .intro
+        margin: 10px 0
 
 #editor
-    background: #F8F8F8
+    background: #F3F1F1
     border: 1px solid #C2C7D0
     border-top: 0
 

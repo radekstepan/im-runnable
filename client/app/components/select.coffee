@@ -34,4 +34,5 @@ module.exports = can.Component.extend
     events:
         # Toggle our expanded state.
         '.field click': (el, evt) ->
-            expanded not do expanded
+            expanded b = not do expanded
+            do @element.find('.search .input').focus if b

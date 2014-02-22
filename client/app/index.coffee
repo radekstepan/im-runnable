@@ -17,6 +17,6 @@ module.exports = (opts) ->
     # Reposition sidebar on scroll.
     do ->
         height = do $('#nav').outerHeight
-        sidebar = $('#sidebar ul')
+        sidebar = $('#sidebar')
         $(document).on 'scroll', ->
-            sidebar.css 'margin-top', Math.max 0, height - do $(window).scrollTop
+            sidebar.css 'top', Math.max -height, - do $(window).scrollTop
