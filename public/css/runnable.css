@@ -70,6 +70,7 @@ a{color:#3e96da}
 #footer ul li{display:inline-block;}
 #footer ul li a{padding:4px 6px}
 
+.CodeMirror-wrap{height:100%}
 .cm-s-github span.cm-keyword{font-weight:bold;color:#333}
 .cm-s-github span.cm-atom{color:#990073}
 .cm-s-github span.cm-number{color:#164}

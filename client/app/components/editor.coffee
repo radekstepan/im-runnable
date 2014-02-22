@@ -25,10 +25,19 @@ module.exports = can.Component.extend
         inserted: (el) ->
             # Setup the editor.
             editor = CodeMirror el.find('.content').get(0),
-                'mode':           db.attr('language')
-                'theme':          'github'
-                'lineNumbers':    yes
-                'viewportMargin': +Infinity
+                # Language mode.
+                'mode': db.attr('language')
+                # Current theme.
+                'theme': 'github'
+                # Show line numbers.
+                'lineNumbers': yes
+                # Be able to search the whole shebang.
+                'viewportMargin': Infinity
+                # Show cursor when selecting...
+                'showCursorWhenSelecting': yes
+                # Line wrap.
+                'lineWrapping': true
+                # Example script (js).
                 'value': """
                     // Require the Request library.
                     var req = require('request');

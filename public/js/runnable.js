@@ -241,7 +241,9 @@
               'mode': db.attr('language'),
               'theme': 'github',
               'lineNumbers': true,
-              'viewportMargin': +Infinity,
+              'viewportMargin': Infinity,
+              'showCursorWhenSelecting': true,
+              'lineWrapping': true,
               'value': "// Require the Request library.\nvar req = require('request');\n\n// Search against FlyMine.\nreq({\n    'uri': 'http://www.flymine.org/query/service/search',\n    // For terms associated with \"micklem\".\n    'qs': { 'q': \"micklem\" }\n}, function(err, res) {\n    if (err) throw err;\n\n    // Just log it.\n    console.log(res.body);\n});"
             });
             return editor.on('cursorActivity', function(instance) {
