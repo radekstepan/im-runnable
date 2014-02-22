@@ -2,6 +2,8 @@
 
 Learn you some InterMine Web Services for good.
 
+![image](https://raw.github.com/radekstepan/im-runnable/master/example.png)
+
 ##Quickstart
 
 [Install Docker](https://www.docker.io/gettingstarted/) and test all is well:

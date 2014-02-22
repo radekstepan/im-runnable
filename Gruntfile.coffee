@@ -4,15 +4,15 @@ module.exports = (grunt) ->
         
         apps_c:
             commonjs:
-                src: [ 'client/app/**/*.{coffee,js,eco,mustache,json}' ]
+                src: [ 'client/**/*.{coffee,js,eco,mustache,json}' ]
                 dest: 'public/js/runnable.js'
                 options:
-                    main: 'client/app/index.coffee'
+                    main: 'client/index.coffee'
                     name: 'runnable'
 
         stylus:
             compile:
-                src: [ 'client/app/styles/**/*.styl' ]
+                src: [ 'client/styles/**/*.styl' ]
                 dest: 'public/css/runnable.css'
 
         concat:            
@@ -42,7 +42,7 @@ module.exports = (grunt) ->
                 src: [
                     'vendor/foundation/css/normalize.css'
                     'vendor/foundation/css/foundation.css'
-                    'client/app/styles/fonts.css'
+                    'client/styles/fonts.css'
                     'vendor/codemirror/lib/codemirror.css'
                     # Our app.
                     'public/css/runnable.css'

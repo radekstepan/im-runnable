@@ -210,7 +210,7 @@
   (function() {
     
     // editor.coffee
-    root.require.register('runnable/client/app/components/editor.js', function(exports, require, module) {
+    root.require.register('runnable/client/components/editor.js', function(exports, require, module) {
     
       var cursor, db, editor;
       
@@ -258,7 +258,7 @@
     });
 
     // select.coffee
-    root.require.register('runnable/client/app/components/select.js', function(exports, require, module) {
+    root.require.register('runnable/client/components/select.js', function(exports, require, module) {
     
       var current, db, expanded, languages, query;
       
@@ -376,7 +376,7 @@
     });
 
     // index.coffee
-    root.require.register('runnable/client/app/index.js', function(exports, require, module) {
+    root.require.register('runnable/client/index.js', function(exports, require, module) {
     
       var components, layout, render;
       
@@ -406,7 +406,7 @@
     });
 
     // db.coffee
-    root.require.register('runnable/client/app/models/db.js', function(exports, require, module) {
+    root.require.register('runnable/client/models/db.js', function(exports, require, module) {
     
       var DB, db, ls,
         __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
@@ -449,7 +449,7 @@
     });
 
     // languages.coffee
-    root.require.register('runnable/client/app/models/languages.js', function(exports, require, module) {
+    root.require.register('runnable/client/models/languages.js', function(exports, require, module) {
     
       var Language, db, languages;
       
@@ -484,7 +484,7 @@
     });
 
     // render.coffee
-    root.require.register('runnable/client/app/modules/render.js', function(exports, require, module) {
+    root.require.register('runnable/client/modules/render.js', function(exports, require, module) {
     
       module.exports = function(template, ctx) {
         if (ctx == null) {
@@ -496,26 +496,26 @@
     });
 
     // editor.mustache
-    root.require.register('runnable/client/app/templates/editor.js', function(exports, require, module) {
+    root.require.register('runnable/client/templates/editor.js', function(exports, require, module) {
     
       module.exports = ["<div id=\"editor\">","    <div class=\"header collapse row\">","        <div class=\"small-12 large-6 columns\">","            <a class=\"btn main icon rocket\">Run</a>","            <a class=\"btn disabled\">Save</a>","        </div>","        <div class=\"small-12 large-6 columns\">","            <span class=\"icon lock right\"></span>","            <span class=\"icon cog right\"></span>","            <app-select class=\"right\"></app-select>","        </div>","    </div>","    <div class=\"collapse row\">","        <div class=\"small-12 columns\">","            <div class=\"content\"></div>","        </div>","    </div>","    <div class=\"collapse row\">","        <div class=\"small-12 columns\">","            <div class=\"footer\">","                Line: {{ cursor.line }} Col: {{ cursor.ch }}","            </div>","        </div>","    </div>","</div>"].join("\n");
     });
 
     // layout.mustache
-    root.require.register('runnable/client/app/templates/layout.js', function(exports, require, module) {
+    root.require.register('runnable/client/templates/layout.js', function(exports, require, module) {
     
       module.exports = ["<div id=\"nav\" class=\"row collapse\">","    <div class=\"small-12 large-8 push-2 columns title\">","        InterMine Runnable","    </div>","    <div class=\"small-12 large-2 columns\">","        <a class=\"btn dark right\">Log in</a>","    </div>","</div>","","<div id=\"sidebar\">","    <a class=\"home icon rocket\" href=\"/\">Home</a>","","    <ul>","        <li><a class=\"icon code\">New Script</a></li>","        <li><a class=\"icon clipboard\">Browse Scripts</a></li>","    </ul>","</div>","","<div id=\"content\">","    <div class=\"row\">","        <div class=\"intro small-12 columns\">","            <h1>Search a mine by keyword</h1>","            <p>Developed by the Micklem lab at the University of Cambridge, InterMine","                enables the creation of biological databases accessed by sophisticated","                web query tools. Parsers are provided for integrating data from many","                common biological data sources and formats, and there is a framework","                for adding your own data.</p>","        </div>","    </div>","","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <ul class=\"tabs\">","                <li class=\"active\"><a class=\"icon code\">Editor</a></li>","                <li><a class=\"icon terminal\">Results</a></li>","                <li><a class=\"icon comment\">Discussion</a></li>","            </ul>","        </div>","    </div>","","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <app-editor></app-editor>","        </div>","    </div>","</div>","","<div id=\"footer\">","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <p>This is a beta version.</p>","            <ul>","                <li><a href=\"#\">Browse Scripts</a></li>","                <li><a href=\"#\">API Documentation</a></li>","                <li><a href=\"#\">Help</a></li>","            </ul>","        </div>","    </div>","</div>"].join("\n");
     });
 
     // select.mustache
-    root.require.register('runnable/client/app/templates/select.js', function(exports, require, module) {
+    root.require.register('runnable/client/templates/select.js', function(exports, require, module) {
     
       module.exports = ["{{ #if languages.length }}","    <div class=\"select {{ #if expanded.value }}expanded{{ /if }}\">","        <div class=\"field\">","            <span class=\"circle\" style=\"background:{{ current.color }}\"></span>","","            {{ current.label }}","","            {{ #if expanded.value }}","                <div class=\"icon nub up-dir\"></div>","            {{ else }}","                <div class=\"icon nub down-dir\"></div>","            {{ /if }}","        </div>","        <div class=\"dropdown\">","            <div class=\"search\">","                <span class=\"icon search\"></span>","                <input class=\"input\" type=\"text\" autocomplete=\"off\" spellcheck=\"off\" value=\"{{ query.value }}\" />","            </div>","            <ul class=\"options\">","                {{ #languages }}","                    {{ #if show }}","                    <li can-click=\"select\" {{ #if active }}class=\"active\"{{ /if }}>","                        <span class=\"circle\" style=\"background:{{ color }}\"></span>","                        {{{ display label }}}","                    </li>","                    {{ /if }}","                {{ /languages }}","            </ul>","        </div>","    </div>","{{ /if }}"].join("\n");
     });
   })();
 
   // Return the main app.
-  var main = root.require("runnable/client/app/index.js");
+  var main = root.require("runnable/client/index.js");
 
   // AMD/RequireJS.
   if (typeof define !== 'undefined' && define.amd) {
@@ -540,7 +540,7 @@
 
   // Alias our app.
   
-  root.require.alias("runnable/client/app/index.js", "runnable/index.js");
+  root.require.alias("runnable/client/index.js", "runnable/index.js");
   
 
 })(this);
