@@ -21,6 +21,7 @@ a{color:#3e96da}
 .select{position:relative;}
 .select.expanded .field{-webkit-border-radius:4px 4px 0 0;border-radius:4px 4px 0 0}
 .select.expanded .dropdown{display:block}
+.select .circle{-webkit-border-radius:50%;border-radius:50%;width:10px;height:10px;display:inline-block;margin-right:2px}
 .select .field{-webkit-border-radius:4px;border-radius:4px;padding:10px 20px 10px 10px;font-weight:700;background:#fff;border:1px solid #b4bac5;width:220px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;}
 .select .field .nub{width:36px;height:100%;position:absolute;top:0;right:0;border-left:1px solid #c2c7d0;-webkit-border-radius:0 4px 4px 0;border-radius:0 4px 4px 0;background:gradient(linear,left bottom,left top,color-stop(0,#f5f5f5),color-stop(.5,#fff));-webkit-box-shadow:0 1px 3px rgba(0,0,0,0.08),inset 0 -1px 4px rgba(151,159,175,0.2);box-shadow:0 1px 3px rgba(0,0,0,0.08),inset 0 -1px 4px rgba(151,159,175,0.2);}
 .select .field .nub:before{position:absolute;top:10px;right:10px}

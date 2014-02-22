@@ -30603,13 +30603,10 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
         }
       });
       
-      current = can.compute('', {
-        set: function(_arg) {
-          var key, label;
-          label = _arg.label, key = _arg.key;
-          db.attr('language', key);
-          return label;
-        }
+      current = new can.Map({});
+      
+      current.bind('key', function(ev, newVal, oldVal) {
+        return db.attr('language', newVal);
       });
       
       languages.on('change', function(obj, property, evt, newVal) {
@@ -30621,7 +30618,7 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
           return;
         }
         if (m = property.match(/^(\d+)\.active$/)) {
-          return current(languages.attr(parseInt(m[1])).attr());
+          return current.attr(languages.attr(parseInt(m[1])).attr(), true);
         }
       });
       
@@ -30631,9 +30628,7 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
         scope: function(obj, parent, el) {
           return {
             'languages': languages,
-            'current': {
-              'value': current
-            },
+            'current': current,
             'query': {
               'value': query
             },
@@ -30820,7 +30815,7 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
     // select.mustache
     root.require.register('runnable/client/app/templates/select.js', function(exports, require, module) {
     
-      module.exports = ["{{ #if languages.length }}","    <div class=\"select {{ #if expanded.value }}expanded{{ /if }}\">","        <div class=\"field\">","            <span>{{ current.value }}</span>","","            {{ #if expanded.value }}","                <div class=\"icon nub up-dir\"></div>","            {{ else }}","                <div class=\"icon nub down-dir\"></div>","            {{ /if }}","        </div>","        <div class=\"dropdown\">","            <div class=\"search\">","                <span class=\"icon search\"></span>","                <input class=\"input\" type=\"text\" autocomplete=\"off\" spellcheck=\"off\" value=\"{{ query.value }}\" />","            </div>","            <ul class=\"options\">","                {{ #languages }}","                    {{ #if show }}","                    <li can-click=\"select\" {{ #if active }}class=\"active\"{{ /if }}>{{{ display label }}}</li>","                    {{ /if }}","                {{ /languages }}","            </ul>","        </div>","    </div>","{{ /if }}"].join("\n");
+      module.exports = ["{{ #if languages.length }}","    <div class=\"select {{ #if expanded.value }}expanded{{ /if }}\">","        <div class=\"field\">","            <span class=\"circle\" style=\"background:{{ current.color }}\"></span>","","            {{ current.label }}","","            {{ #if expanded.value }}","                <div class=\"icon nub up-dir\"></div>","            {{ else }}","                <div class=\"icon nub down-dir\"></div>","            {{ /if }}","        </div>","        <div class=\"dropdown\">","            <div class=\"search\">","                <span class=\"icon search\"></span>","                <input class=\"input\" type=\"text\" autocomplete=\"off\" spellcheck=\"off\" value=\"{{ query.value }}\" />","            </div>","            <ul class=\"options\">","                {{ #languages }}","                    {{ #if show }}","                    <li can-click=\"select\" {{ #if active }}class=\"active\"{{ /if }}>","                        <span class=\"circle\" style=\"background:{{ color }}\"></span>","                        {{{ display label }}}","                    </li>","                    {{ /if }}","                {{ /languages }}","            </ul>","        </div>","    </div>","{{ /if }}"].join("\n");
     });
   })();
 

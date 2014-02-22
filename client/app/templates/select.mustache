@@ -1,7 +1,9 @@
 {{ #if languages.length }}
     <div class="select {{ #if expanded.value }}expanded{{ /if }}">
         <div class="field">
-            <span>{{ current.value }}</span>
+            <span class="circle" style="background:{{ current.color }}"></span>
+
+            {{ current.label }}
 
             {{ #if expanded.value }}
                 <div class="icon nub up-dir"></div>
@@ -17,7 +19,10 @@
             <ul class="options">
                 {{ #languages }}
                     {{ #if show }}
-                    <li can-click="select" {{ #if active }}class="active"{{ /if }}>{{{ display label }}}</li>
+                    <li can-click="select" {{ #if active }}class="active"{{ /if }}>
+                        <span class="circle" style="background:{{ color }}"></span>
+                        {{{ display label }}}
+                    </li>
                     {{ /if }}
                 {{ /languages }}
             </ul>

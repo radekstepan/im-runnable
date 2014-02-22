@@ -21,12 +21,12 @@ expanded.bind 'change', (ev, newVal, oldVal) ->
     query '' if newVal?
 
 # Currently active language.
-current = can.compute '',
-    # Save it to the user db too.
-    set: ({ label, key }) ->
-        db.attr 'language', key
-        # Save the label.
-        label
+current = new can.Map {}
+
+# Watch changes to the key...
+current.bind 'key', (ev, newVal, oldVal) ->
+    # ... and save it to the user db.
+    db.attr 'language', newVal
 
 # Observe language selection.
 languages.on 'change', (obj, property, evt, newVal) ->
@@ -36,7 +36,7 @@ languages.on 'change', (obj, property, evt, newVal) ->
     return unless newVal
     if m = property.match /^(\d+)\.active$/
         # Use the label to show as `current`.
-        current languages.attr(parseInt m[1]).attr()
+        current.attr languages.attr(parseInt m[1]).attr(), yes
 
 # The select field UI element.
 module.exports = can.Component.extend
@@ -50,8 +50,7 @@ module.exports = can.Component.extend
             # All the languages.
             'languages': languages
             # The currently selected language.
-            'current':
-                'value': current
+            'current':   current
             # Dropdown filter.
             'query':
                 'value': query
