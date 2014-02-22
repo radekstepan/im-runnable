@@ -1,6 +1,6 @@
-<div class="select {{ #if expanded.value }}expanded{{ /if }}">
-    <div class="field">
-        {{ #if languages.length }}
+{{ #if languages.length }}
+    <div class="select {{ #if expanded.value }}expanded{{ /if }}">
+        <div class="field">
             <span>{{ current.value }}</span>
 
             {{ #if expanded.value }}
@@ -8,21 +8,19 @@
             {{ else }}
                 <div class="icon nub down-dir"></div>
             {{ /if }}
-        {{ else }}
-            <span class="icon spin6"></span>
-        {{ /if }}
-    </div>
-    <div class="dropdown">
-        <div class="search">
-            <span class="icon search"></span>
-            <input class="input" type="text" autocomplete="off" spellcheck="off" value="{{ query.value }}" />
         </div>
-        <ul class="options">
-            {{ #languages }}
-                {{ #if show }}
-                <li can-click="select" {{ #if active }}class="active"{{ /if }}>{{{ display label }}}</li>
-                {{ /if }}
-            {{ /languages }}
-        </ul>
+        <div class="dropdown">
+            <div class="search">
+                <span class="icon search"></span>
+                <input class="input" type="text" autocomplete="off" spellcheck="off" value="{{ query.value }}" />
+            </div>
+            <ul class="options">
+                {{ #languages }}
+                    {{ #if show }}
+                    <li can-click="select" {{ #if active }}class="active"{{ /if }}>{{{ display label }}}</li>
+                    {{ /if }}
+                {{ /languages }}
+            </ul>
+        </div>
     </div>
-</div>
+{{ /if }}

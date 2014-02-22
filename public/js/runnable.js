@@ -252,7 +252,9 @@
     // select.coffee
     root.require.register('runnable/client/app/components/select.js', function(exports, require, module) {
     
-      var current, expanded, languages, query;
+      var current, db, expanded, languages, query;
+      
+      db = require('../models/db');
       
       languages = require('../models/languages');
       
@@ -288,15 +290,25 @@
         }
       });
       
-      current = can.compute('');
+      current = can.compute('', {
+        set: function(_arg) {
+          var key, label;
+          label = _arg.label, key = _arg.key;
+          db.attr('language', key);
+          return label;
+        }
+      });
       
       languages.on('change', function(obj, property, evt, newVal) {
         var m;
         if (evt !== 'add' && evt !== 'set') {
           return;
         }
+        if (!newVal) {
+          return;
+        }
         if (m = property.match(/^(\d+)\.active$/)) {
-          return current(languages.attr(parseInt(m[1])).attr().label);
+          return current(languages.attr(parseInt(m[1])).attr());
         }
       });
       
@@ -390,20 +402,55 @@
       
     });
 
-    // config.json
-    root.require.register('runnable/client/app/models/config.js', function(exports, require, module) {
+    // db.coffee
+    root.require.register('runnable/client/app/models/db.js', function(exports, require, module) {
     
-      module.exports = {
-          "default_language": "node"
-      };
+      var DB, db, ls,
+        __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+      
+      ls = window.localStorage;
+      
+      DB = can.Model.extend({
+        dbName: md5("im-runnable-" + document.location.hostname),
+        keys: null,
+        init: function() {
+          var item, key, _i, _len, _ref, _results;
+          item = ls.getItem(this.dbName);
+          if ((this.keys = (item && item.split(',')) || []).length) {
+            _ref = this.keys;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              key = _ref[_i];
+              _results.push(this.attr(key, JSON.parse(ls.getItem("" + this.dbName + "-" + key))));
+            }
+            return _results;
+          }
+        }
+      });
+      
+      module.exports = db = new DB({
+        'language': 'node'
+      });
+      
+      db.bind('change', function(ev, attr, how, newVal, oldVal) {
+        switch (how) {
+          case 'set':
+            ls.setItem("" + this.dbName + "-" + attr, JSON.stringify(newVal));
+            if (__indexOf.call(this.keys, attr) < 0) {
+              this.keys.push(attr);
+            }
+            return ls.setItem(this.dbName, this.keys.join(','));
+        }
+      });
+      
     });
 
     // languages.coffee
     root.require.register('runnable/client/app/models/languages.js', function(exports, require, module) {
     
-      var Language, config, languages;
+      var Language, db, languages;
       
-      config = require('./config');
+      db = require('./db');
       
       Language = can.Model.extend({
         'findAll': function() {
@@ -418,11 +465,12 @@
       module.exports = languages = new Language.List(Language.findAll());
       
       languages.on('add', function(obj, list) {
-        var item, _i, _len, _results;
+        var active, item, _i, _len, _results;
+        active = db.attr('language');
         _results = [];
         for (_i = 0, _len = list.length; _i < _len; _i++) {
           item = list[_i];
-          if (config.default_language === item.attr('key')) {
+          if (active === item.attr('key')) {
             item.attr('active', true);
           }
           _results.push(item.attr('show', true));
@@ -459,7 +507,7 @@
     // select.mustache
     root.require.register('runnable/client/app/templates/select.js', function(exports, require, module) {
     
-      module.exports = ["<div class=\"select {{ #if expanded.value }}expanded{{ /if }}\">","    <div class=\"field\">","        {{ #if languages.length }}","            <span>{{ current.value }}</span>","","            {{ #if expanded.value }}","                <div class=\"icon nub up-dir\"></div>","            {{ else }}","                <div class=\"icon nub down-dir\"></div>","            {{ /if }}","        {{ else }}","            <span class=\"icon spin6\"></span>","        {{ /if }}","    </div>","    <div class=\"dropdown\">","        <div class=\"search\">","            <span class=\"icon search\"></span>","            <input class=\"input\" type=\"text\" autocomplete=\"off\" spellcheck=\"off\" value=\"{{ query.value }}\" />","        </div>","        <ul class=\"options\">","            {{ #languages }}","                {{ #if show }}","                <li can-click=\"select\" {{ #if active }}class=\"active\"{{ /if }}>{{{ display label }}}</li>","                {{ /if }}","            {{ /languages }}","        </ul>","    </div>","</div>"].join("\n");
+      module.exports = ["{{ #if languages.length }}","    <div class=\"select {{ #if expanded.value }}expanded{{ /if }}\">","        <div class=\"field\">","            <span>{{ current.value }}</span>","","            {{ #if expanded.value }}","                <div class=\"icon nub up-dir\"></div>","            {{ else }}","                <div class=\"icon nub down-dir\"></div>","            {{ /if }}","        </div>","        <div class=\"dropdown\">","            <div class=\"search\">","                <span class=\"icon search\"></span>","                <input class=\"input\" type=\"text\" autocomplete=\"off\" spellcheck=\"off\" value=\"{{ query.value }}\" />","            </div>","            <ul class=\"options\">","                {{ #languages }}","                    {{ #if show }}","                    <li can-click=\"select\" {{ #if active }}class=\"active\"{{ /if }}>{{{ display label }}}</li>","                    {{ /if }}","                {{ /languages }}","            </ul>","        </div>","    </div>","{{ /if }}"].join("\n");
     });
   })();
 

@@ -110,7 +110,6 @@ a{color:#3e96da}
 .icon.up-dir:before{content:'\e80e'}
 .icon.search:before{content:'\e80f'}
 .icon.cog:before{content:'\e810'}
-.icon.spin6{animation:spin 2s infinite linear}
 @-moz-keyframes spin{0%{-moz-transform:rotate(0)}
 100%{-moz-transform:rotate(360deg)}
 }@-webkit-keyframes spin{0%{-webkit-transform:rotate(0)}

@@ -1,3 +1,4 @@
+db        = require '../models/db'
 languages = require '../models/languages'
 
 # Current query filter.
@@ -20,14 +21,22 @@ expanded.bind 'change', (ev, newVal, oldVal) ->
     query '' if newVal?
 
 # Currently active language.
-current = can.compute ''
+current = can.compute '',
+    # Save it to the user db too.
+    set: ({ label, key }) ->
+        db.attr 'language', key
+        # Save the label.
+        label
 
 # Observe language selection.
 languages.on 'change', (obj, property, evt, newVal) ->
+    # Added on xhr, set by user.
     return unless evt in [ 'add', 'set' ]
+    # Only care for setting, not resetting.
+    return unless newVal
     if m = property.match /^(\d+)\.active$/
         # Use the label to show as `current`.
-        current languages.attr(parseInt m[1]).attr().label
+        current languages.attr(parseInt m[1]).attr()
 
 # The select field UI element.
 module.exports = can.Component.extend
