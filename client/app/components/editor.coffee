@@ -1,4 +1,11 @@
+db = require '../models/db'
+
+# The CodeMirror object.
 editor = null
+
+# Update editor syntax highlighting when the language changes.
+db.bind 'language', (obj, newVal) ->
+    editor.setOption 'mode', newVal
 
 # Cursor position.
 cursor = new can.Map
@@ -18,7 +25,7 @@ module.exports = can.Component.extend
         inserted: (el) ->
             # Setup the editor.
             editor = CodeMirror el.find('.content').get(0),
-                'mode':           'javascript'
+                'mode':           db.attr('language')
                 'theme':          'github'
                 'lineNumbers':    yes
                 'viewportMargin': +Infinity

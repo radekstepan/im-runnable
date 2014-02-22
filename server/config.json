@@ -5,7 +5,7 @@
             "label": "Java",
             "cmd": "cat > script.java; javac script.java; java script"
         }, {
-            "key": "node",
+            "key": "javascript",
             "label": "JavaScript (Node.js)",
             "cmd": "cat > script.js; node script.js"
         }, {

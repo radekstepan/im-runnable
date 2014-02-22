@@ -212,9 +212,15 @@
     // editor.coffee
     root.require.register('runnable/client/app/components/editor.js', function(exports, require, module) {
     
-      var cursor, editor;
+      var cursor, db, editor;
+      
+      db = require('../models/db');
       
       editor = null;
+      
+      db.bind('language', function(obj, newVal) {
+        return editor.setOption('mode', newVal);
+      });
       
       cursor = new can.Map({
         'line': 1,
@@ -232,7 +238,7 @@
         events: {
           inserted: function(el) {
             editor = CodeMirror(el.find('.content').get(0), {
-              'mode': 'javascript',
+              'mode': db.attr('language'),
               'theme': 'github',
               'lineNumbers': true,
               'viewportMargin': +Infinity,
@@ -429,7 +435,7 @@
       });
       
       module.exports = db = new DB({
-        'language': 'node'
+        'language': 'javascript'
       });
       
       db.bind('change', function(ev, attr, how, newVal, oldVal) {

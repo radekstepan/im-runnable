@@ -36,7 +36,6 @@ class MegaGreeter
 
 end
 
-
 if __FILE__ == $0
     mg = MegaGreeter.new
     mg.say_hi

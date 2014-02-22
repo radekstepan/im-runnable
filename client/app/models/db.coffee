@@ -17,7 +17,7 @@ DB = can.Model.extend
 
 # Init with the defaults.
 module.exports = db = new DB
-    'language': 'node'
+    'language': 'javascript' # TODO this language needs to exist when xhr
 
 # Propagate changes to localStorage.
 db.bind 'change', (ev, attr, how, newVal, oldVal) ->
