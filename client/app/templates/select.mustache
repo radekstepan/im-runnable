@@ -10,11 +10,13 @@
     <div class="dropdown">
         <div class="search">
             <span class="icon search"></span>
-            <input class="input" type="text" autocomplete="off" spellcheck="off" />
+            <input class="input" type="text" autocomplete="off" spellcheck="off" value="{{ query.value }}" />
         </div>
         <ul class="options">
             {{ #languages }}
-                <li can-click="select" {{ #if active }}class="active"{{ /if }}>{{ label }}</li>
+                {{ #if show }}
+                <li can-click="select" {{ #if active }}class="active"{{ /if }}>{{{ display label }}}</li>
+                {{ /if }}
             {{ /languages }}
         </ul>
     </div>

@@ -31,11 +31,12 @@ a{color:#3e96da}
 .select .dropdown .search .input:focus{background:#fff;-webkit-box-shadow:0 0 5px rgba(62,150,218,0.5),inset 0 1px 2px rgba(151,159,175,0.2),inset 0 1px 15px rgba(151,159,175,0.05);box-shadow:0 0 5px rgba(62,150,218,0.5),inset 0 1px 2px rgba(151,159,175,0.2),inset 0 1px 15px rgba(151,159,175,0.05);border:1px solid rgba(62,150,218,0.7)}
 .select .dropdown .options{list-style-type:none;margin:0;font-weight:normal;overflow-x:hidden;overflow-y:auto;max-height:100px;}
 .select .dropdown .options:hover .active:not(:hover){color:inherit;background:inherit}
-.select .dropdown .options li{cursor:pointer;padding:2px 10px;}
+.select .dropdown .options li{cursor:pointer;padding:2px 10px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
 .select .dropdown .options li:hover,.select .dropdown .options li.active{color:#fff;background:#2bc56d}
+.select .dropdown .options li span{text-decoration:underline}
 .tabs{border-bottom:1px solid #c2c7d0;margin:20px 0;padding-bottom:10px;}
 .tabs li{display:inline-block;}
-.tabs li.active a{border-color:#c2c7d0;border-bottom-color:#f3f1f1;color:#2bc56d;background:#f3f1f1;padding-bottom:21px}
+.tabs li.active a{border-color:#c2c7d0;border-bottom-color:#fcfcfc;color:#2bc56d;background:#fcfcfc;padding-bottom:21px}
 .tabs li a{padding:10px 30px 13px;border:1px solid #f3f1f1;border-bottom:0;color:#979faf;-webkit-transition:0.3s color ease;-moz-transition:0.3s color ease;-o-transition:0.3s color ease;-ms-transition:0.3s color ease;transition:0.3s color ease;font-weight:bold;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
 .tabs li a.icon:before{font-weight:bold;margin-right:8px}
 .tabs li a:hover{color:#32383d}
@@ -54,7 +55,7 @@ a{color:#3e96da}
 #sidebar ul li a:hover{color:#565a5e}
 #content{padding:20px 20px 20px 90px;}
 #content .intro{margin:10px 0}
-#editor{background:#f3f1f1;border:1px solid #c2c7d0;border-top:0;}
+#editor{background:#fcfcfc;border:1px solid #c2c7d0;border-top:0;}
 #editor .header{padding:10px 20px;border-bottom:1px solid #c2c7d0;}
 #editor .header .btn:not(:last-child){margin-right:10px}
 #editor .header .btn.icon:before{margin-right:8px}

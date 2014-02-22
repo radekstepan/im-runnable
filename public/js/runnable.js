@@ -252,22 +252,51 @@
     // select.coffee
     root.require.register('runnable/client/app/components/select.js', function(exports, require, module) {
     
-      var config, expanded, languages;
+      var config, expanded, lang, languages, query, _i, _len;
       
-      languages = require('../models/languages');
+      languages = new can.List(require('../models/languages'));
       
       config = require('../models/config');
       
-      _.find(languages, function(lang) {
-        if (config.default_language !== lang.key) {
-          return;
+      for (_i = 0, _len = languages.length; _i < _len; _i++) {
+        lang = languages[_i];
+        if (config.default_language === lang.attr('key')) {
+          lang.attr('active', true);
         }
-        return lang.active = true;
+        lang.attr('show', true);
+      }
+      
+      query = can.compute('');
+      
+      query.bind('change', function(ev, newVal, oldVal) {
+        var re, _j, _len1, _results;
+        if (!newVal.length) {
+          return (function() {
+            var _j, _len1, _results;
+            _results = [];
+            for (_j = 0, _len1 = languages.length; _j < _len1; _j++) {
+              lang = languages[_j];
+              _results.push(lang.attr('show', true));
+            }
+            return _results;
+          })();
+        }
+        re = new RegExp("" + newVal + ".*", 'i');
+        _results = [];
+        for (_j = 0, _len1 = languages.length; _j < _len1; _j++) {
+          lang = languages[_j];
+          _results.push(lang.attr('show', lang.attr('label').match(re)));
+        }
+        return _results;
       });
       
-      languages = new can.List(languages);
-      
       expanded = can.compute(false);
+      
+      expanded.bind('change', function(ev, newVal, oldVal) {
+        if (newVal != null) {
+          return query('');
+        }
+      });
       
       module.exports = can.Component.extend({
         tag: 'app-select',
@@ -275,13 +304,16 @@
         scope: function(obj, parent, el) {
           return {
             languages: languages,
+            'query': {
+              'value': query
+            },
             'expanded': {
               'value': expanded
             },
             'select': function(obj) {
-              var key, label, lang, _i, _len, _ref;
-              for (_i = 0, _len = languages.length; _i < _len; _i++) {
-                lang = languages[_i];
+              var key, label, _j, _len1, _ref;
+              for (_j = 0, _len1 = languages.length; _j < _len1; _j++) {
+                lang = languages[_j];
                 lang.attr('active', false);
               }
               _ref = obj.attr(), key = _ref.key, label = _ref.label;
@@ -297,6 +329,26 @@
             if (b) {
               return this.element.find('.search .input').focus();
             }
+          },
+          '.search .input keyup': function(el, evt) {
+            switch (evt.which) {
+              case 27:
+                return expanded(false);
+              default:
+                return query(el.val().toLowerCase().replace(/[^a-z]*/g, ''));
+            }
+          },
+          'inserted': function(el) {
+            return $(document).on('click', function(evt) {
+              if (!(el.is(evt.target) || el.has(evt.target).length)) {
+                return expanded(false);
+              }
+            });
+          }
+        },
+        helpers: {
+          display: function(val, opts) {
+            return val().replace(new RegExp("(" + (query()) + ")", 'ig'), "<span>$1</span>");
           }
         }
       });
@@ -385,13 +437,13 @@
     // layout.mustache
     root.require.register('runnable/client/app/templates/layout.js', function(exports, require, module) {
     
-      module.exports = ["<div id=\"nav\" class=\"row collapse\">","    <div class=\"small-12 large-8 push-2 columns title\">","        InterMine Runnable","    </div>","    <div class=\"small-12 large-2 columns\">","        <a class=\"btn dark right\">Log in</a>","    </div>","</div>","","<div id=\"sidebar\">","    <a class=\"home icon rocket\" href=\"/\">Home</a>","","    <ul>","        <li><a class=\"icon code\">New Script</a></li>","        <li><a class=\"icon clipboard\">Browse Scripts</a></li>","        <li><a class=\"icon book\">API Documentation</a></li>","        <li><a class=\"icon help\">Help</a></li>","    </ul>","</div>","","<div id=\"content\">","    <div class=\"row\">","        <div class=\"intro small-12 columns\">","            <h1>Search a mine by keyword</h1>","            <p>Developed by the Micklem lab at the University of Cambridge, InterMine","                enables the creation of biological databases accessed by sophisticated","                web query tools. Parsers are provided for integrating data from many","                common biological data sources and formats, and there is a framework","                for adding your own data.</p>","        </div>","    </div>","","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <ul class=\"tabs\">","                <li class=\"active\"><a class=\"icon code\">Editor</a></li>","                <li><a class=\"icon terminal\">Results</a></li>","                <li><a class=\"icon comment\">Discussion</a></li>","            </ul>","        </div>","    </div>","","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <app-editor></app-editor>","        </div>","    </div>","</div>","","<div id=\"footer\">","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <p>This is a beta version.</p>","            <ul>","                <li><a href=\"#\">Browse Scripts</a></li>","                <li><a href=\"#\">API Documentation</a></li>","                <li><a href=\"#\">Help</a></li>","            </ul>","        </div>","    </div>","</div>"].join("\n");
+      module.exports = ["<div id=\"nav\" class=\"row collapse\">","    <div class=\"small-12 large-8 push-2 columns title\">","        InterMine Runnable","    </div>","    <div class=\"small-12 large-2 columns\">","        <a class=\"btn dark right\">Log in</a>","    </div>","</div>","","<div id=\"sidebar\">","    <a class=\"home icon rocket\" href=\"/\">Home</a>","","    <ul>","        <li><a class=\"icon code\">New Script</a></li>","        <li><a class=\"icon clipboard\">Browse Scripts</a></li>","    </ul>","</div>","","<div id=\"content\">","    <div class=\"row\">","        <div class=\"intro small-12 columns\">","            <h1>Search a mine by keyword</h1>","            <p>Developed by the Micklem lab at the University of Cambridge, InterMine","                enables the creation of biological databases accessed by sophisticated","                web query tools. Parsers are provided for integrating data from many","                common biological data sources and formats, and there is a framework","                for adding your own data.</p>","        </div>","    </div>","","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <ul class=\"tabs\">","                <li class=\"active\"><a class=\"icon code\">Editor</a></li>","                <li><a class=\"icon terminal\">Results</a></li>","                <li><a class=\"icon comment\">Discussion</a></li>","            </ul>","        </div>","    </div>","","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <app-editor></app-editor>","        </div>","    </div>","</div>","","<div id=\"footer\">","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <p>This is a beta version.</p>","            <ul>","                <li><a href=\"#\">Browse Scripts</a></li>","                <li><a href=\"#\">API Documentation</a></li>","                <li><a href=\"#\">Help</a></li>","            </ul>","        </div>","    </div>","</div>"].join("\n");
     });
 
     // select.mustache
     root.require.register('runnable/client/app/templates/select.js', function(exports, require, module) {
     
-      module.exports = ["<div class=\"select {{ #if expanded.value }}expanded{{ /if }}\">","    <div class=\"field\">","        <span>{{ #languages }}{{ #if active }}{{ label }}{{ /if }}{{ /languages }}</span>","        {{ #if expanded.value }}","            <div class=\"icon up-dir\"></div>","        {{ else }}","            <div class=\"icon down-dir\"></div>","        {{ /if }}","    </div>","    <div class=\"dropdown\">","        <div class=\"search\">","            <span class=\"icon search\"></span>","            <input class=\"input\" type=\"text\" autocomplete=\"off\" spellcheck=\"off\" />","        </div>","        <ul class=\"options\">","            {{ #languages }}","                <li can-click=\"select\" {{ #if active }}class=\"active\"{{ /if }}>{{ label }}</li>","            {{ /languages }}","        </ul>","    </div>","</div>"].join("\n");
+      module.exports = ["<div class=\"select {{ #if expanded.value }}expanded{{ /if }}\">","    <div class=\"field\">","        <span>{{ #languages }}{{ #if active }}{{ label }}{{ /if }}{{ /languages }}</span>","        {{ #if expanded.value }}","            <div class=\"icon up-dir\"></div>","        {{ else }}","            <div class=\"icon down-dir\"></div>","        {{ /if }}","    </div>","    <div class=\"dropdown\">","        <div class=\"search\">","            <span class=\"icon search\"></span>","            <input class=\"input\" type=\"text\" autocomplete=\"off\" spellcheck=\"off\" value=\"{{ query.value }}\" />","        </div>","        <ul class=\"options\">","            {{ #languages }}","                {{ #if show }}","                <li can-click=\"select\" {{ #if active }}class=\"active\"{{ /if }}>{{{ display label }}}</li>","                {{ /if }}","            {{ /languages }}","        </ul>","    </div>","</div>"].join("\n");
     });
   })();
 

@@ -188,10 +188,14 @@ a
             li
                 cursor: pointer
                 padding: 2px 10px
+                user-select: none
 
                 &:hover, &.active
                     color: #FFF
                     background: $highlight-color
+
+                span
+                    text-decoration: underline
 
 .tabs
     border-bottom: 1px solid #C2C7D0
@@ -204,9 +208,9 @@ a
         &.active
             a
                 border-color: #C2C7D0
-                border-bottom-color: #F3F1F1
+                border-bottom-color: #FCFCFC
                 color: $highlight-color
-                background: #F3F1F1
+                background: #FCFCFC
                 padding-bottom: 21px
         
         a
@@ -300,7 +304,7 @@ a
         margin: 10px 0
 
 #editor
-    background: #F3F1F1
+    background: #FCFCFC
     border: 1px solid #C2C7D0
     border-top: 0
 
