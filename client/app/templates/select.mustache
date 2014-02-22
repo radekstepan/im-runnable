@@ -1,10 +1,15 @@
 <div class="select {{ #if expanded.value }}expanded{{ /if }}">
     <div class="field">
-        <span>{{ #languages }}{{ #if active }}{{ label }}{{ /if }}{{ /languages }}</span>
-        {{ #if expanded.value }}
-            <div class="icon up-dir"></div>
+        {{ #if languages.length }}
+            <span>{{ current.value }}</span>
+
+            {{ #if expanded.value }}
+                <div class="icon nub up-dir"></div>
+            {{ else }}
+                <div class="icon nub down-dir"></div>
+            {{ /if }}
         {{ else }}
-            <div class="icon down-dir"></div>
+            <span class="icon spin6"></span>
         {{ /if }}
     </div>
     <div class="dropdown">

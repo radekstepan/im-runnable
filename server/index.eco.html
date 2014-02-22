@@ -10,14 +10,13 @@
     <script src="js/runnable.bundle.js"></script>
 </head>
 <body>
-    <div id="app"></div>
     <script>
         // Once scripts have loaded.
         $(function() {
             // ...show the app.
             require('runnable')({
-                'el': '#app',
-                'service': 'http://0.0.0.0:5000'
+                'el': 'body',
+                'service': '<%- @host %>'
             });
         });
     </script>

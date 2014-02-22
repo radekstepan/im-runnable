@@ -1,11 +1,4 @@
-languages = new can.List require '../models/languages'
-config    = require '../models/config'
-
-for lang in languages
-    # Set the default language.
-    lang.attr 'active', yes if config.default_language is lang.attr 'key'
-    # Show us all.
-    lang.attr 'show', yes
+languages = require '../models/languages'
 
 # Current query filter.
 query = can.compute ''
@@ -26,6 +19,16 @@ expanded = can.compute no
 expanded.bind 'change', (ev, newVal, oldVal) ->
     query '' if newVal?
 
+# Currently active language.
+current = can.compute ''
+
+# Observe language selection.
+languages.on 'change', (obj, property, evt, newVal) ->
+    return unless evt in [ 'add', 'set' ]
+    if m = property.match /^(\d+)\.active$/
+        # Use the label to show as `current`.
+        current languages.attr(parseInt m[1]).attr().label
+
 # The select field UI element.
 module.exports = can.Component.extend
 
@@ -35,11 +38,18 @@ module.exports = can.Component.extend
 
     scope: (obj, parent, el) ->
         {
-            languages,
+            # All the languages.
+            'languages': languages
+            # The currently selected language.
+            'current':
+                'value': current
+            # Dropdown filter.
             'query':
                 'value': query
+            # Are we showing dropdown?
             'expanded':
                 'value': expanded
+            # Dropdown click event.
             'select': (obj) ->
                 # Reset all.
                 ( lang.attr 'active', no for lang in languages )

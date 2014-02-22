@@ -2,12 +2,21 @@
 logger  = require('tracer').colorConsole()
 restify = require 'restify'
 connect = require 'connect'
+fs      = require 'fs'
 path    = require 'path'
-runner  = require './runner'
+eco     = require 'eco'
+_       = require 'lodash'
+
+config  = require './config.json'
+runner  = require './runner.coffee'
 
 # Root directory.
 root = path.resolve __dirname, '../'
 
+# The index template.
+index = fs.readFileSync "#{root}/server/index.eco.html", 'utf8'
+
+# The package.
 { name, version } = require "#{root}/package.json"
 
 # Restify server config.
@@ -16,6 +25,11 @@ server = restify.createServer
     'version': version or '0.0.0'
 
 server.use do restify.bodyParser
+
+# Get a list of environments available.
+server.get '/api/languages', (req, res, next) ->
+    res.send 'data': config.languages
+    do next
 
 # Run a script.
 server.post '/api/run', (req, res, next) ->
@@ -28,7 +42,7 @@ server.post '/api/run', (req, res, next) ->
         res.send new restify.MissingParameterError '`cmd` and `src` need to be provided'
         do next
 
-    unless cmd in [ 'node', 'ruby' ]
+    unless cmd in _.pluck config.languages, 'key'
         res.send new restify.InvalidArgumentError "#{cmd} is not supported"
         do next
 
@@ -44,10 +58,19 @@ server.post '/api/run', (req, res, next) ->
 app = connect()
 # Serve the public dir.
 .use(connect.static("#{root}/public"))
-# Pipe to restify.
 .use((req, res, next) ->
-    server.server.emit 'request', req, res
+    logger.log req.url
+
+    switch req.url
+        # Index page.
+        when '/'
+            res.end eco.render index,
+                'host': req.headers.host
+        # Pipe to restify.
+        else
+            server.server.emit 'request', req, res
+
 # Connect listen.
 ).listen process.env.PORT or 5000
 
-logger.log "#{name} started on port #{app.address().port}"
+logger.info "#{name} started on port #{app.address().port}"

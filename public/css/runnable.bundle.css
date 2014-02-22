@@ -5217,8 +5217,8 @@ a{color:#3e96da}
 .select.expanded .field{-webkit-border-radius:4px 4px 0 0;border-radius:4px 4px 0 0}
 .select.expanded .dropdown{display:block}
 .select .field{-webkit-border-radius:4px;border-radius:4px;padding:10px 20px 10px 10px;font-weight:700;background:#fff;border:1px solid #b4bac5;width:220px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;}
-.select .field .icon{width:36px;height:100%;position:absolute;top:0;right:0;border-left:1px solid #c2c7d0;-webkit-border-radius:0 4px 4px 0;border-radius:0 4px 4px 0;background:gradient(linear,left bottom,left top,color-stop(0,#f5f5f5),color-stop(.5,#fff));-webkit-box-shadow:0 1px 3px rgba(0,0,0,0.08),inset 0 -1px 4px rgba(151,159,175,0.2);box-shadow:0 1px 3px rgba(0,0,0,0.08),inset 0 -1px 4px rgba(151,159,175,0.2);}
-.select .field .icon:before{position:absolute;top:10px;right:10px}
+.select .field .nub{width:36px;height:100%;position:absolute;top:0;right:0;border-left:1px solid #c2c7d0;-webkit-border-radius:0 4px 4px 0;border-radius:0 4px 4px 0;background:gradient(linear,left bottom,left top,color-stop(0,#f5f5f5),color-stop(.5,#fff));-webkit-box-shadow:0 1px 3px rgba(0,0,0,0.08),inset 0 -1px 4px rgba(151,159,175,0.2);box-shadow:0 1px 3px rgba(0,0,0,0.08),inset 0 -1px 4px rgba(151,159,175,0.2);}
+.select .field .nub:before{position:absolute;top:10px;right:10px}
 .select .dropdown{cursor:default;display:none;width:220px;position:absolute;top:37px;left:0;z-index:100;background:#fff;border:1px solid #c2c7d0;-webkit-border-radius:0 0 4px 4px;border-radius:0 0 4px 4px;-webkit-box-shadow:0 1px 3px rgba(0,0,0,0.05);box-shadow:0 1px 3px rgba(0,0,0,0.05);padding:10px 4px 4px 4px;}
 .select .dropdown .search{position:relative;}
 .select .dropdown .search .icon{position:absolute;top:8px;right:8px;opacity:.4;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=40)";filter:alpha(opacity=40)}
@@ -5305,3 +5305,19 @@ a{color:#3e96da}
 .icon.up-dir:before{content:'\e80e'}
 .icon.search:before{content:'\e80f'}
 .icon.cog:before{content:'\e810'}
+.icon.spin6{animation:spin 2s infinite linear}
+@-moz-keyframes spin{0%{-moz-transform:rotate(0)}
+100%{-moz-transform:rotate(360deg)}
+}@-webkit-keyframes spin{0%{-webkit-transform:rotate(0)}
+100%{-webkit-transform:rotate(360deg)}
+}@-moz-keyframes spin{0%{transform:rotate(0)}
+100%{transform:rotate(360deg)}
+}@-webkit-keyframes spin{0%{transform:rotate(0)}
+100%{transform:rotate(360deg)}
+}@-o-keyframes spin{0%{transform:rotate(0)}
+100%{transform:rotate(360deg)}
+}@-ms-keyframes spin{0%{transform:rotate(0)}
+100%{transform:rotate(360deg)}
+}@keyframes spin{0%{transform:rotate(0)}
+100%{transform:rotate(360deg)}
+}
