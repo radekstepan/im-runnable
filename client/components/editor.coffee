@@ -24,14 +24,14 @@ module.exports = can.Component.extend
     events:
         # Run.
         '.btn.run click': ->
-            $.ajax('/api/run',
+            $.ajax('/api/job',
                 'contentType' : 'application/json'
                 'type' : 'POST'
                 'data': JSON.stringify
                     'src':  do editor.getValue
                     'lang': editor.getOption('mode')
             ).done( (res) ->
-                console.log res
+                console.log res.data.id
             ).fail (err) ->
                 throw err
 

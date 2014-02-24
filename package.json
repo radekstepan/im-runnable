@@ -9,7 +9,9 @@
         "coffee-script": "~1.7.1",
         "tracer": "~0.6.2",
         "lodash": "~2.4.1",
-        "eco": "~1.1.0-rc-3"
+        "eco": "~1.1.0-rc-3",
+        "node-uuid": "~1.4.1",
+        "async": "~0.2.10"
     },
     "devDependencies": {
         "bower": "~1.2.7",

@@ -8,7 +8,9 @@ eco     = require 'eco'
 _       = require 'lodash'
 
 config  = require './config.json'
-runner  = require './runner.coffee'
+
+# Start the queue.
+queue   = require('./queue.coffee') config.queue
 
 # Root directory.
 root = path.resolve __dirname, '../'
@@ -31,8 +33,8 @@ server.get '/api/languages', (req, res, next) ->
     res.send 'data': config.languages
     do next
 
-# Run a script.
-server.post '/api/run', (req, res, next) ->
+# Submit a job to run a script.
+server.post '/api/job', (req, res, next) ->
     # TODO: Auth.
     token = req.headers?.authorization
 
@@ -49,14 +51,30 @@ server.post '/api/run', (req, res, next) ->
     # Form the command.
     { cmd } = _.find config.languages, { 'key': lang }
 
-    # Run it and get the output.
-    runner { cmd, src }, (err, out) ->
-        if err
+    # Add a job to the queue & get its id.
+    id = queue.push { cmd, src }
+    # Return it.
+    res.send 'data': { id }
+    do next
+
+# Retrieve the results of a job.
+server.get '/api/job/:id', (req, res, next) ->    
+    # No job.
+    unless job = queue.get req.params.id
+        res.send new restify.ResourceNotFoundError()
+    else
+        if job.err
             res.send new restify.InternalError err
         else
-            res.send out
-        
-        do next
+            res.send job
+    
+    do next
+
+# Delete a job.
+server.del '/api/job/:id', (req, res, next) ->
+    queue.delete req.params.id
+    res.send {}    
+    do next
 
 app = connect()
 # Serve the public dir.

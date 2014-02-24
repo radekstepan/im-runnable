@@ -26,5 +26,9 @@
             "cmd": "cat > script.rb; ruby script.rb",
             "color": "#C32433"
         }
-    ]
+    ],
+    "queue": {
+        "concurrency": 10,
+        "timeout": 5e4
+    }
 }
