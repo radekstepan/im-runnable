@@ -4,14 +4,16 @@
     "description": "Learn you some InterMine Web Services for good",
     "author": "Radek <rs676@cam.ac.uk>",
     "dependencies": {
-        "restify": "~2.6.1",
         "connect": "~2.13.0",
         "coffee-script": "~1.7.1",
         "tracer": "~0.6.2",
         "lodash": "~2.4.1",
         "eco": "~1.1.0-rc-3",
         "node-uuid": "~1.4.1",
-        "async": "~0.2.10"
+        "async": "~0.2.10",
+        "flatiron": "~0.3.11",
+        "director": "~1.2.2",
+        "union": "~0.3.8"
     },
     "devDependencies": {
         "bower": "~1.2.7",

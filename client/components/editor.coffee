@@ -24,7 +24,7 @@ module.exports = can.Component.extend
     events:
         # Run.
         '.btn.run click': ->
-            $.ajax('/api/job',
+            $.ajax('/api/jobs',
                 'contentType' : 'application/json'
                 'type' : 'POST'
                 'data': JSON.stringify

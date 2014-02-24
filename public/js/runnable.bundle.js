@@ -30542,7 +30542,7 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
         },
         events: {
           '.btn.run click': function() {
-            return $.ajax('/api/job', {
+            return $.ajax('/api/jobs', {
               'contentType': 'application/json',
               'type': 'POST',
               'data': JSON.stringify({
