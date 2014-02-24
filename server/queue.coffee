@@ -1,8 +1,13 @@
+#!/usr/bin/env coffee
+logger    = require('tracer').colorConsole()
 uuid      = require 'node-uuid'
 { queue } = require 'async'
 _         = require 'lodash'
 
 runner    = require './runner.coffee'
+
+# Get the current time.
+time = -> + new Date
 
 module.exports = (opts) ->
     # Create the queue.
@@ -17,6 +22,10 @@ module.exports = (opts) ->
             # Generate the id of the job.
             id = do uuid.v4
 
+            # Log it.
+            logger.log "Job #{id} queued"
+            start = do time
+
             # Add the job into results as running.
             results[id] = { 'status': 'running' }
 
@@ -27,15 +36,22 @@ module.exports = (opts) ->
             q.push job, (err, out) ->
                 # Skip if job got deleted and we have not responded yet.
                 return unless id of results
+                
+                # Log it.
+                logger.log "Job #{id} finished"
+                ms = do time - start
+
                 # Add the result to the results map.
-                results[id] = { 'status': 'done', err, out }
+                results[id] = { 'status': 'done', err, out, ms }
 
             # Return the id to the user.
             id
 
         # Get the job results.
         get: (id) ->
-            delete results[id] if job = results[id] # remove too
+            job = results[id]
+            # Delete if finished too.
+            delete results[id] if job.status is 'done'
             job
 
         # Delete a job.

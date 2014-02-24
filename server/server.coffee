@@ -53,7 +53,8 @@ server.post '/api/job', (req, res, next) ->
 
     # Add a job to the queue & get its id.
     id = queue.push { cmd, src }
-    # Return it.
+    # Return and say we are processing.
+    res.status 202
     res.send 'data': { id }
     do next
 
@@ -66,14 +67,19 @@ server.get '/api/job/:id', (req, res, next) ->
         if job.err
             res.send new restify.InternalError err
         else
-            res.send job
+            # Remove error code.
+            delete job.err
+            # And send the results.
+            res.send 'data': job
     
     do next
 
 # Delete a job.
 server.del '/api/job/:id', (req, res, next) ->
     queue.delete req.params.id
-    res.send {}    
+    # Success, no content.
+    res.status 204
+    do res.send
     do next
 
 app = connect()

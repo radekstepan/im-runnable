@@ -28,7 +28,7 @@
         }
     ],
     "queue": {
-        "concurrency": 10,
+        "concurrency": 2,
         "timeout": 5e4
     }
 }
