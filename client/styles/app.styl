@@ -2,7 +2,7 @@
 
 $nav-height      = 60px
 $sidebar-width   = 70px
-$highlight-color = #26B061
+$highlight-color = #6CC644
 $select-width    = 220px
 
 body, h1, h2, h3, h4, h5
@@ -211,15 +211,7 @@ a
 
     li
         display: inline-block
-
-        &.active
-            a
-                border-color: #C2C7D0
-                border-bottom-color: #FCFCFC
-                color: $highlight-color
-                background: #FCFCFC
-                padding-bottom: 21px
-        
+       
         a
             padding: 10px 30px 13px
             border: 1px solid #F3F1F1
@@ -229,13 +221,33 @@ a
             font-weight: bold
             user-select: none
 
+            &:not(.active):hover
+                color: #32383D
+
+            &.active
+                border-color: #C2C7D0
+                border-bottom-color: #FCFCFC
+                color: $highlight-color
+                background: #FCFCFC
+                padding-bottom: 14px
+                cursor: default
+
+                &.fade
+                    background: linear-gradient(top, #FCFCFC, #FFF)
+
             &.icon
                 &:before
                     font-weight: bold
                     margin-right: 8px
 
-            &:hover
-                color: #32383D
+.tab-content
+    display: none
+
+    &.active
+        display: block
+
+    article
+        margin-top: 20px
 
 #nav
     background: #32383D

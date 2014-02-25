@@ -5,6 +5,7 @@ layout = require './templates/layout'
 components = [
     'editor'
     'select'
+    'tabs'
 ]
 
 module.exports = (opts) ->

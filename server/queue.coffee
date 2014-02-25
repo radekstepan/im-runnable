@@ -17,7 +17,7 @@ module.exports = (opts) ->
     # Create the queue.
     q = queue (job, done) ->
         # Maybe we have timed out.
-        return unless ref = jobs[job.id]
+        return do done unless ref = jobs[job.id]
         # Job started.
         ref.started_at = do time
         ref.status = 'running'

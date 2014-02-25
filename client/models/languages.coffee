@@ -4,7 +4,7 @@ db = require './db'
 Language = can.Model.extend
     'findAll': ->
         $.ajax
-            'url':      '/api/languages'
+            'url':      '/api/v1/languages.json'
             'type':     'get'
             'dataType': 'json'
 , {}
