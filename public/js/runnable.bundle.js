@@ -30517,9 +30517,11 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
     // editor.coffee
     root.require.register('runnable/client/components/editor.js', function(exports, require, module) {
     
-      var cursor, db, editor;
+      var cursor, db, editor, job;
       
       db = require('../models/db');
+      
+      job = require('../models/job');
       
       editor = null;
       
@@ -30542,17 +30544,9 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
         },
         events: {
           '.btn.run click': function() {
-            return $.ajax('/api/jobs', {
-              'contentType': 'application/json',
-              'type': 'POST',
-              'data': JSON.stringify({
-                'src': editor.getValue(),
-                'lang': editor.getOption('mode')
-              })
-            }).done(function(res) {
-              return console.log(res.data.id);
-            }).fail(function(err) {
-              throw err;
+            return job({
+              'src': editor.getValue(),
+              'lang': editor.getOption('mode')
             });
           },
           inserted: function(el) {
@@ -30788,6 +30782,51 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
             return ls.setItem(this.dbName, this.keys.join(','));
         }
       });
+      
+    });
+
+    // job.coffee
+    root.require.register('runnable/client/models/job.js', function(exports, require, module) {
+    
+      var Job;
+      
+      Job = can.Model.extend({
+        'findAll': function() {
+          return $.ajax({
+            'url': '/api/v1/jobs.json',
+            'type': 'get',
+            'dataType': 'json',
+            'contentType': 'application/json'
+          });
+        },
+        'findOne': function() {
+          return $.ajax({
+            'url': '/api/v1/jobs/455454.json',
+            'type': 'get',
+            'dataType': 'json',
+            'contentType': 'application/json'
+          });
+        },
+        'create': function(data) {
+          return $.ajax({
+            'url': '/api/v1/jobs.json',
+            'type': 'post',
+            'dataType': 'json',
+            'contentType': 'application/json',
+            'data': JSON.stringify(data)
+          });
+        },
+        'destroy': function() {
+          return $.ajax({
+            'url': '/api/v1/jobs/455454.json',
+            'type': 'delete',
+            'dataType': 'json',
+            'contentType': 'application/json'
+          });
+        }
+      }, {});
+      
+      module.exports = function(data) {};
       
     });
 

@@ -1,4 +1,5 @@
-db = require '../models/db'
+db  = require '../models/db'
+job = require '../models/job'
 
 # The CodeMirror object.
 editor = null
@@ -24,16 +25,9 @@ module.exports = can.Component.extend
     events:
         # Run.
         '.btn.run click': ->
-            $.ajax('/api/jobs',
-                'contentType' : 'application/json'
-                'type' : 'POST'
-                'data': JSON.stringify
-                    'src':  do editor.getValue
-                    'lang': editor.getOption('mode')
-            ).done( (res) ->
-                console.log res.data.id
-            ).fail (err) ->
-                throw err
+            job
+                'src':  do editor.getValue
+                'lang': editor.getOption('mode')
 
         inserted: (el) ->
             # Setup the editor.
