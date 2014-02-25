@@ -8,7 +8,7 @@ path     = require 'path'
 eco      = require 'eco'
 _        = require 'lodash'
 
-config   = require './config.json'
+config   = require './config.coffee'
 
 # Start the queue.
 queue    = require('./queue.coffee') config.queue

@@ -16,13 +16,17 @@ module.exports = (opts) ->
     
     # Create the queue.
     q = queue (job, done) ->
-        ref = jobs[job.id]
+        # Maybe we have timed out.
+        return unless ref = jobs[job.id]
         # Job started.
         ref.started_at = do time
         ref.status = 'running'
         
         # Actually run.
         runner job, (err, out) ->
+            # Maybe we have timed out.
+            return do done unless ref
+
             # Job finished.
             ref.finished_at = do time
             ref.status = 'finished'
