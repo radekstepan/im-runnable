@@ -54,9 +54,25 @@ app.use flatiron.plugins.http,
         connect.static("#{root}/public")
     ]
 
+    # Handle errors.
+    'onError': (err, req, res) ->
+        { status, message } = err
+        obj = { message, 'responseCode': status }
+        if req.query.suppress_response_codes is 'true'
+            status = 200
+
+        res.writeHead status, 'Content-Type': 'application/json'
+        res.write JSON.stringify obj
+        do res.end       
+
 # Response handler.
-res = (obj, code=200) ->
-    @res.writeHead code, 'Content-Type': 'application/json'
+res = (obj, status=200) ->
+    # Suppress response codes?
+    obj.responseCode = status
+    if @req.query.suppress_response_codes is 'true'
+        status = 200
+
+    @res.writeHead status, 'Content-Type': 'application/json'
     @res.write JSON.stringify obj
     do @res.end
 
