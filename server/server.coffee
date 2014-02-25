@@ -30,7 +30,10 @@ respond = (obj, status=200) ->
         status = 200
 
     @res.writeHead status, 'Content-Type': 'application/json'
-    @res.write JSON.stringify obj
+    if _.keys(obj).length
+        @res.write JSON.stringify obj
+    else
+        do @res.write # empty response for 204
     do @res.end
 
 # Flatiron app.
@@ -99,29 +102,23 @@ app.router = new director.http.Router
                     
                     respond.call @, { 'data': { id, cmd } }, 201
 
-# # Retrieve the results of a job.
-# server.get '/api/job/:id', (req, res, next) ->    
-#     # No job.
-#     unless job = queue.get req.params.id
-#         res.send new restify.ResourceNotFoundError()
-#     else
-#         if job.err
-#             res.send new restify.InternalError err
-#         else
-#             # Remove error code.
-#             delete job.err
-#             # And send the results.
-#             res.send 'data': job
-    
-#     do next
+                # Get all of the jobs for a user.
+                get: ->
+                    respond.call @, { 'data': do queue.get }
 
-# # Delete a job.
-# server.del '/api/job/:id', (req, res, next) ->
-#     queue.delete req.params.id
-#     # Success, no content.
-#     res.status 204
-#     do res.send
-#     do next
+                # Retrieve the results of a job.
+                '/:id':
+                    get: (id) ->
+                        if data = queue.get id
+                            respond.call @, { data }
+                        else
+                            respond.call @, { 'message': 'Not found' }, 404
+
+                    del: (id) ->
+                        if queue.delete id
+                            respond.call @, { }, 204
+                        else
+                            respond.call @, { 'message': 'Not found' }, 404
 
 # Listen.
 app.listen process.env.PORT or 5000, ->
