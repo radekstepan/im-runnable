@@ -22,6 +22,17 @@ index = fs.readFileSync "#{root}/server/index.eco.html", 'utf8'
 # The package.
 { name, version } = require "#{root}/package.json"
 
+# Response handler.
+respond = (obj, status=200) ->
+    # Suppress response codes?
+    obj.response_code = status
+    if @req.query.suppress_response_codes in [ 'true', 'yes' ]
+        status = 200
+
+    @res.writeHead status, 'Content-Type': 'application/json'
+    @res.write JSON.stringify obj
+    do @res.end
+
 # Flatiron app.
 { app } = flatiron
 app.use flatiron.plugins.http,
@@ -56,25 +67,7 @@ app.use flatiron.plugins.http,
 
     # Handle errors.
     'onError': (err, req, res) ->
-        { status, message } = err
-        obj = { message, 'responseCode': status }
-        if req.query.suppress_response_codes is 'true'
-            status = 200
-
-        res.writeHead status, 'Content-Type': 'application/json'
-        res.write JSON.stringify obj
-        do res.end       
-
-# Response handler.
-res = (obj, status=200) ->
-    # Suppress response codes?
-    obj.responseCode = status
-    if @req.query.suppress_response_codes is 'true'
-        status = 200
-
-    @res.writeHead status, 'Content-Type': 'application/json'
-    @res.write JSON.stringify obj
-    do @res.end
+        respond.call { req, res }, { 'message': err.message }, err.status
 
 # The api router.
 app.router = new director.http.Router
@@ -83,7 +76,7 @@ app.router = new director.http.Router
             '/languages':
                 # Get a list of environments available.
                 get: ->
-                    res.call @, { 'data': config.languages }
+                    respond.call @, { 'data': config.languages }
             
             '/jobs':
                 # Submit a job to run a script.
@@ -92,11 +85,11 @@ app.router = new director.http.Router
 
                     # Missing params?
                     unless lang and src
-                        return res.call @, { 'message': 'Missing parameters, you need to provide: lang, src' }, 400
+                        return respond.call @, { 'message': 'Missing parameters, you need to provide: lang, src' }, 400
 
                     # Unknown language?
                     unless lang in _.pluck config.languages, 'key'
-                        return res.call @, { 'message': "Platform not supported: #{lang}" }, 400
+                        return respond.call @, { 'message': "Platform not supported: #{lang}" }, 400
 
                     # Form the command.
                     { cmd } = _.find config.languages, { 'key': lang }
@@ -104,7 +97,7 @@ app.router = new director.http.Router
                     # Add a job to the queue & get its id.
                     id = queue.push { cmd, src }
                     
-                    res.call @, { 'data': { id, cmd } }, 201
+                    respond.call @, { 'data': { id, cmd } }, 201
 
 # # Retrieve the results of a job.
 # server.get '/api/job/:id', (req, res, next) ->    
