@@ -1,11 +1,10 @@
 render = require './modules/render'
-
 layout = require './templates/layout'
 
 components = [
+    'tabs'
     'editor'
     'select'
-    'tabs'
 ]
 
 module.exports = (opts) ->
@@ -13,7 +12,7 @@ module.exports = (opts) ->
     ( require "./components/#{name}" for name in components )
 
     # Setup the UI.
-    $(opts.el).html render layout
+    (el = $(opts.el)).html render layout
 
     # Reposition sidebar on scroll.
     do ->

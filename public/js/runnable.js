@@ -386,22 +386,45 @@
     // tabs.coffee
     root.require.register('runnable/client/components/tabs.js', function(exports, require, module) {
     
+      var active, tabs;
+      
+      active = can.compute(0);
+      
+      tabs = new can.List([
+        {
+          'label': 'Editor',
+          'classes': 'icon code'
+        }, {
+          'label': 'Results',
+          'classes': 'icon terminal fade'
+        }, {
+          'label': 'Discussion',
+          'classes': 'icon comment fade'
+        }
+      ]);
+      
       module.exports = can.Component.extend({
         tag: 'app-tabs',
         template: require('../templates/tabs'),
         scope: function(obj, parent, el) {
-          return {};
+          return {
+            tabs: tabs,
+            "switch": function(item, el, evt) {
+              return active(_.findIndex(tabs, item.attr()));
+            }
+          };
         },
-        events: {
-          '.tabs li a:not(.active) click': function(el, evt) {
-            var key;
-            this.element.find('.tabs li a.active').removeClass('active');
-            el.addClass('active');
-            this.element.find('.tab-content.active').removeClass('active');
-            key = el.data('tab');
-            return this.element.find(".tab-content[data-tab='" + key + "']").addClass('active');
-          },
-          inserted: function(el) {}
+        helpers: {
+          isActive: function(idx, opts) {
+            if (_.isFunction(idx)) {
+              idx = idx();
+            }
+            if (idx === active()) {
+              return opts.fn(this);
+            } else {
+              return opts.inverse(this);
+            }
+          }
         }
       });
       
@@ -416,15 +439,15 @@
       
       layout = require('./templates/layout');
       
-      components = ['editor', 'select', 'tabs'];
+      components = ['tabs', 'editor', 'select'];
       
       module.exports = function(opts) {
-        var name, _i, _len;
+        var el, name, _i, _len;
         for (_i = 0, _len = components.length; _i < _len; _i++) {
           name = components[_i];
           require("./components/" + name);
         }
-        $(opts.el).html(render(layout));
+        (el = $(opts.el)).html(render(layout));
         return (function() {
           var height, sidebar;
           height = $('#nav').outerHeight();
@@ -621,7 +644,7 @@
     // tabs.mustache
     root.require.register('runnable/client/templates/tabs.js', function(exports, require, module) {
     
-      module.exports = ["<div class=\"row\">","    <div class=\"small-12 columns\">","        <ul class=\"tabs\">","            <li><a data-tab=\"editor\" class=\"icon code active\">Editor</a></li>","            <li><a data-tab=\"results\" class=\"icon terminal fade\">Results</a></li>","            <li><a data-tab=\"discussion\" class=\"icon comment fade\">Discussion</a></li>","        </ul>","    </div>","</div>","","<div class=\"row\">","    <div class=\"small-12 columns\">","        <div  data-tab=\"editor\" class=\"tab-content active\">","            <app-editor></app-editor>","        </div>","        <div data-tab=\"results\" class=\"tab-content\">","            <article>","                <h2>Results of running a script</h2>","            </article>","        </div>","        <div data-tab=\"discussion\" class=\"tab-content\">","            <article>","                <h2>Not implemented yet</h2>","","                <p>This place could contain people's comments on public scripts.</p>","            </article>","        </div>","    </div>","</div>"].join("\n");
+      module.exports = ["<div class=\"row\">","    <div class=\"small-12 columns\">","        <ul class=\"tabs\">","            {{ #each tabs }}","            <li><a can-click=\"switch\" class=\"{{ classes }} {{ #isActive @index }}active{{ /isActive }}\">{{ label }}</a></li>","            {{ /each }}","        </ul>","    </div>","</div>","","<div class=\"row\">","    <div class=\"small-12 columns\">","        <div class=\"tab-content {{ #isActive 0 }}active{{ /isActive }}\">","            <app-editor></app-editor>","        </div>","        <div class=\"tab-content {{ #isActive 1 }}active{{ /isActive }}\">","            <article>","                <h2>Results of running a script</h2>","            </article>","        </div>","        <div class=\"tab-content {{ #isActive 2 }}active{{ /isActive }}\">","            <article>","                <h2>Not implemented yet</h2>","","                <p>This place could contain people's comments on public scripts.</p>","            </article>","        </div>","    </div>","</div>"].join("\n");
     });
   })();
 
