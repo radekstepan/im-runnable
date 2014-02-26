@@ -1,5 +1,6 @@
-db  = require '../models/db'
-job = require '../models/job'
+db   = require '../models/db'
+job  = require '../models/job'
+tabs = require './tabs'
 
 # The CodeMirror object.
 editor = null
@@ -29,6 +30,9 @@ module.exports = can.Component.extend
             job.submit
                 'src':  do editor.getValue
                 'lang': editor.getOption('mode')
+
+            # Switch to the results (2nd) tab.
+            tabs 1
 
         inserted: (el) ->
             # Setup the editor.

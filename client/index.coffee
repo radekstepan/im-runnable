@@ -4,6 +4,7 @@ layout = require './templates/layout'
 components = [
     'tabs'
     'editor'
+    'results'
     'select'
 ]
 

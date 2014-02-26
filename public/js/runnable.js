@@ -212,11 +212,13 @@
     // editor.coffee
     root.require.register('runnable/client/components/editor.js', function(exports, require, module) {
     
-      var cursor, db, editor, job;
+      var cursor, db, editor, job, tabs;
       
       db = require('../models/db');
       
       job = require('../models/job');
+      
+      tabs = require('./tabs');
       
       editor = null;
       
@@ -239,10 +241,11 @@
         },
         events: {
           '.btn.run click': function() {
-            return job.submit({
+            job.submit({
               'src': editor.getValue(),
               'lang': editor.getOption('mode')
             });
+            return tabs(1);
           },
           inserted: function(el) {
             editor = CodeMirror(el.find('.content').get(0), {
@@ -261,6 +264,26 @@
             });
           }
         }
+      });
+      
+    });
+
+    // results.coffee
+    root.require.register('runnable/client/components/results.js', function(exports, require, module) {
+    
+      var job;
+      
+      job = require('../models/job');
+      
+      module.exports = can.Component.extend({
+        tag: 'app-results',
+        template: require('../templates/results'),
+        scope: function(obj, parent, el) {
+          return {
+            job: job
+          };
+        },
+        helpers: {}
       });
       
     });
@@ -388,7 +411,7 @@
     
       var active, tabs;
       
-      active = can.compute(0);
+      module.exports = active = can.compute(0);
       
       tabs = new can.List([
         {
@@ -403,7 +426,7 @@
         }
       ]);
       
-      module.exports = can.Component.extend({
+      can.Component.extend({
         tag: 'app-tabs',
         template: require('../templates/tabs'),
         scope: function(obj, parent, el) {
@@ -439,7 +462,7 @@
       
       layout = require('./templates/layout');
       
-      components = ['tabs', 'editor', 'select'];
+      components = ['tabs', 'editor', 'results', 'select'];
       
       module.exports = function(opts) {
         var el, name, _i, _len;
@@ -635,6 +658,12 @@
       module.exports = ["<div id=\"nav\" class=\"row collapse\">","    <div class=\"small-12 large-8 push-2 columns title\">","        InterMine Runnable","    </div>","    <div class=\"small-12 large-2 columns\">","        <a class=\"btn dark right\">Log in</a>","    </div>","</div>","","<div id=\"sidebar\">","    <a class=\"home icon rocket\" href=\"/\">Home</a>","","    <ul>","        <li><a class=\"icon code\">New Script</a></li>","        <li><a class=\"icon clipboard\">Browse Scripts</a></li>","    </ul>","</div>","","<div id=\"content\">","    <div class=\"row\">","        <div class=\"intro small-12 columns\">","            <h1>Search a mine by keyword</h1>","            <p>Developed by the Micklem lab at the University of Cambridge, InterMine","                enables the creation of biological databases accessed by sophisticated","                web query tools. Parsers are provided for integrating data from many","                common biological data sources and formats, and there is a framework","                for adding your own data.</p>","        </div>","    </div>","","    <app-tabs></app-tabs>","</div>","","<div id=\"footer\">","    <div class=\"row\">","        <div class=\"small-12 columns\">","            <p>This is a beta version.</p>","            <ul>","                <li><a href=\"#\">Browse Scripts</a></li>","                <li><a href=\"#\">API Documentation</a></li>","                <li><a href=\"#\">Help</a></li>","            </ul>","        </div>","    </div>","</div>"].join("\n");
     });
 
+    // results.mustache
+    root.require.register('runnable/client/templates/results.js', function(exports, require, module) {
+    
+      module.exports = ["<article>","    <p>No results to show.</p>","","    <code>{{ job.status }}</code>","</article>"].join("\n");
+    });
+
     // select.mustache
     root.require.register('runnable/client/templates/select.js', function(exports, require, module) {
     
@@ -644,7 +673,7 @@
     // tabs.mustache
     root.require.register('runnable/client/templates/tabs.js', function(exports, require, module) {
     
-      module.exports = ["<div class=\"row\">","    <div class=\"small-12 columns\">","        <ul class=\"tabs\">","            {{ #each tabs }}","            <li><a can-click=\"switch\" class=\"{{ classes }} {{ #isActive @index }}active{{ /isActive }}\">{{ label }}</a></li>","            {{ /each }}","        </ul>","    </div>","</div>","","<div class=\"row\">","    <div class=\"small-12 columns\">","        <div class=\"tab-content {{ #isActive 0 }}active{{ /isActive }}\">","            <app-editor></app-editor>","        </div>","        <div class=\"tab-content {{ #isActive 1 }}active{{ /isActive }}\">","            <article>","                <h2>Results of running a script</h2>","            </article>","        </div>","        <div class=\"tab-content {{ #isActive 2 }}active{{ /isActive }}\">","            <article>","                <h2>Not implemented yet</h2>","","                <p>This place could contain people's comments on public scripts.</p>","            </article>","        </div>","    </div>","</div>"].join("\n");
+      module.exports = ["<div class=\"row\">","    <div class=\"small-12 columns\">","        <ul class=\"tabs\">","            {{ #each tabs }}","            <li><a can-click=\"switch\" class=\"{{ classes }} {{ #isActive @index }}active{{ /isActive }}\">{{ label }}</a></li>","            {{ /each }}","        </ul>","    </div>","</div>","","<div class=\"row\">","    <div class=\"small-12 columns\">","        <div class=\"tab-content {{ #isActive 0 }}active{{ /isActive }}\">","            <app-editor></app-editor>","        </div>","        <div class=\"tab-content {{ #isActive 1 }}active{{ /isActive }}\">","            <app-results></app-results>","        </div>","        <div class=\"tab-content {{ #isActive 2 }}active{{ /isActive }}\">","            <article>","                <h2>Not implemented yet</h2>","","                <p>This place could contain people's comments on public scripts.</p>","            </article>","        </div>","    </div>","</div>"].join("\n");
     });
   })();
 

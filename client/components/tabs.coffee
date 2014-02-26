@@ -1,5 +1,5 @@
 # First tab is active.
-active = can.compute 0
+module.exports = active = can.compute 0
 
 # We keep the tabs labels in a list so we get a nice scope for events.
 tabs = new can.List [
@@ -15,7 +15,8 @@ tabs = new can.List [
     }
 ]
 
-module.exports = can.Component.extend
+# Not exported! Not that it matters...
+can.Component.extend
 
     tag: 'app-tabs'
 
