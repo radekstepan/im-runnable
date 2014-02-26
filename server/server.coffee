@@ -114,7 +114,7 @@ app.router = new director.http.Router
                         else
                             respond.call @, { 'message': 'Not found' }, 404
 
-                    del: (id) ->
+                    delete: (id) ->
                         if queue.delete id
                             respond.call @, { }, 204
                         else

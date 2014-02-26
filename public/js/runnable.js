@@ -239,7 +239,7 @@
         },
         events: {
           '.btn.run click': function() {
-            return job({
+            return job.submit({
               'src': editor.getValue(),
               'lang': editor.getOption('mode')
             });
@@ -483,45 +483,73 @@
     // job.coffee
     root.require.register('runnable/client/models/job.js', function(exports, require, module) {
     
-      var Job;
+      var job;
       
-      Job = can.Model.extend({
-        'findAll': function() {
-          return $.ajax({
-            'url': '/api/v1/jobs.json',
-            'type': 'get',
-            'dataType': 'json',
-            'contentType': 'application/json'
-          });
-        },
-        'findOne': function() {
-          return $.ajax({
-            'url': '/api/v1/jobs/455454.json',
-            'type': 'get',
-            'dataType': 'json',
-            'contentType': 'application/json'
-          });
-        },
-        'create': function(data) {
+      module.exports = job = new can.Map({
+        id: null,
+        submit: function(obj) {
+          var _this = this;
           return $.ajax({
             'url': '/api/v1/jobs.json',
             'type': 'post',
             'dataType': 'json',
             'contentType': 'application/json',
-            'data': JSON.stringify(data)
+            'data': JSON.stringify(obj)
+          }).then(function(_arg) {
+            var data;
+            data = _arg.data;
+            return _this.attr('id', data.id);
           });
         },
-        'destroy': function() {
+        get: _.debounce(function(done) {
+          var _this = this;
           return $.ajax({
-            'url': '/api/v1/jobs/455454.json',
+            'url': "/api/v1/jobs/" + (this.attr('id')) + ".json",
+            'type': 'get',
+            'dataType': 'json',
+            'contentType': 'application/json'
+          }).then(function(_arg) {
+            var data;
+            data = _arg.data;
+            _this.attr(data, false);
+            if (_.isFunction(done)) {
+              return done();
+            }
+          });
+        }, 500),
+        destroy: function(id) {
+          return $.ajax({
+            'url': "/api/v1/jobs/" + id + ".json",
             'type': 'delete',
             'dataType': 'json',
             'contentType': 'application/json'
           });
         }
-      }, {});
+      });
       
-      module.exports = function(data) {};
+      job.bind('id', function(ev, newId, oldId) {
+        var get;
+        if (oldId) {
+          job.destroy(oldId);
+        }
+        this.removeAttr('out');
+        return (get = function() {
+          if (job.attr('out')) {
+            return;
+          }
+          if (newId !== job.attr('id')) {
+            return;
+          }
+          return job.get(get);
+        })();
+      });
+      
+      job.bind('out', function(ev, newVal, oldVal) {
+        if (!newVal) {
+          return;
+        }
+        return console.log(newVal);
+      });
       
     });
 

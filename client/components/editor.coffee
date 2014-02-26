@@ -25,7 +25,8 @@ module.exports = can.Component.extend
     events:
         # Run.
         '.btn.run click': ->
-            job
+            # Submit a new job.
+            job.submit
                 'src':  do editor.getValue
                 'lang': editor.getOption('mode')
 
