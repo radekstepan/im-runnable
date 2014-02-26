@@ -2,7 +2,14 @@
     <div class="small-12 columns">
         <ul class="tabs">
             {{ #each tabs }}
-            <li><a can-click="switch" class="{{ classes }} {{ #isActive @index }}active{{ /isActive }}">{{ label }}</a></li>
+            {{ #if show }}
+            <li><a can-click="switch" class="{{ #fade }}fade{{ /fade }} {{ #isActive @index }}active{{ /isActive }}">
+                <span class="wrapper">
+                    <span class="icon {{ icon }}"></span>
+                </span>
+                {{ label }}
+            </a></li>
+            {{ /if }}
             {{ /each }}
         </ul>
     </div>

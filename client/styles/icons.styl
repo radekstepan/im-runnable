@@ -1,3 +1,5 @@
+@import 'nib'
+
 .icon    
     &:before
         font-family: "fontello"
@@ -11,14 +13,11 @@
         text-transform: none
         width: 1em
         line-height: 1em
-        
+    
+    // Font Awesome
     &.help
         &:before
             content: '\e802'
-    
-    &.chat
-        &:before
-            content: '\e803'
     
     &.lock-open
         &:before
@@ -55,15 +54,7 @@
     &.terminal
         &:before
             content: '\e809'
-    
-    &.keyboard
-        &:before
-            content: '\e804'
-    
-    &.clipboard
-        &:before
-            content: '\e800'
-    
+
     &.inbox
         &:before
             content: '\e806'
@@ -79,6 +70,29 @@
     &.cog
         &:before
             content: '\e810'
+    
+    // MFG Labs
+    &.chat
+        &:before
+            content: '\e803'
+    
+    // Entypo
+    &.keyboard
+        &:before
+            content: '\e804'
+    
+    // Typicons
+    &.clipboard
+        &:before
+            content: '\e800'
+
+    // Fontelico
+    &.spin6
+        animation: spin 2s infinite linear
+        display: inline-block
+
+        &:before
+            content: '\e811'
 
 @-moz-keyframes spin {
     from { -moz-transform: rotate(0deg) }

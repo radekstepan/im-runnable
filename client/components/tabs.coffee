@@ -1,3 +1,5 @@
+job = require '../models/job'
+
 # First tab is active.
 module.exports = active = can.compute 0
 
@@ -5,15 +7,29 @@ module.exports = active = can.compute 0
 tabs = new can.List [
     {
         'label': 'Editor'
-        'classes': 'icon code'
+        'icon':  'code'
+        'show':  yes
     }, {
-        'label': 'Results'
-        'classes': 'icon terminal fade'        
+        'label': 'Results'  # text
+        'fade':  yes        # shall we fade the background color
+        'icon':  'terminal' # tab icon
+        'show':  no         # show in the menu
     }, {
         'label': 'Discussion'
-        'classes': 'icon comment fade'
+        'fade':  yes
+        'icon':  'comment'
+        'show':  yes
     }
 ]
+
+# Show second tab when we have a job.
+job.on 'change', ->
+    tabs.attr(1).attr 'show', yes
+
+# When a job is running, change the second tab icon to a spinner.
+job.on 'status', (evt, status) ->
+    tabs.attr(1).attr 'icon'
+    , if status is 'running' then 'spin6' else 'terminal'
 
 # Not exported! Not that it matters...
 can.Component.extend

@@ -30714,22 +30714,37 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
     // tabs.coffee
     root.require.register('runnable/client/components/tabs.js', function(exports, require, module) {
     
-      var active, tabs;
+      var active, job, tabs;
+      
+      job = require('../models/job');
       
       module.exports = active = can.compute(0);
       
       tabs = new can.List([
         {
           'label': 'Editor',
-          'classes': 'icon code'
+          'icon': 'code',
+          'show': true
         }, {
           'label': 'Results',
-          'classes': 'icon terminal fade'
+          'fade': true,
+          'icon': 'terminal',
+          'show': false
         }, {
           'label': 'Discussion',
-          'classes': 'icon comment fade'
+          'fade': true,
+          'icon': 'comment',
+          'show': true
         }
       ]);
+      
+      job.on('change', function() {
+        return tabs.attr(1).attr('show', true);
+      });
+      
+      job.on('status', function(evt, status) {
+        return tabs.attr(1).attr('icon', status === 'running' ? 'spin6' : 'terminal');
+      });
       
       can.Component.extend({
         tag: 'app-tabs',
@@ -30966,7 +30981,7 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
     // results.mustache
     root.require.register('runnable/client/templates/results.js', function(exports, require, module) {
     
-      module.exports = ["<article>","    <p>No results to show.</p>","","    <code>{{ job.status }}</code>","</article>"].join("\n");
+      module.exports = ["<article id=\"results\">","    <code>{{ job.status }}</code>","</article>"].join("\n");
     });
 
     // select.mustache
@@ -30978,7 +30993,7 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
     // tabs.mustache
     root.require.register('runnable/client/templates/tabs.js', function(exports, require, module) {
     
-      module.exports = ["<div class=\"row\">","    <div class=\"small-12 columns\">","        <ul class=\"tabs\">","            {{ #each tabs }}","            <li><a can-click=\"switch\" class=\"{{ classes }} {{ #isActive @index }}active{{ /isActive }}\">{{ label }}</a></li>","            {{ /each }}","        </ul>","    </div>","</div>","","<div class=\"row\">","    <div class=\"small-12 columns\">","        <div class=\"tab-content {{ #isActive 0 }}active{{ /isActive }}\">","            <app-editor></app-editor>","        </div>","        <div class=\"tab-content {{ #isActive 1 }}active{{ /isActive }}\">","            <app-results></app-results>","        </div>","        <div class=\"tab-content {{ #isActive 2 }}active{{ /isActive }}\">","            <article>","                <h2>Not implemented yet</h2>","","                <p>This place could contain people's comments on public scripts.</p>","            </article>","        </div>","    </div>","</div>"].join("\n");
+      module.exports = ["<div class=\"row\">","    <div class=\"small-12 columns\">","        <ul class=\"tabs\">","            {{ #each tabs }}","            {{ #if show }}","            <li><a can-click=\"switch\" class=\"{{ #fade }}fade{{ /fade }} {{ #isActive @index }}active{{ /isActive }}\">","                <span class=\"wrapper\">","                    <span class=\"icon {{ icon }}\"></span>","                </span>","                {{ label }}","            </a></li>","            {{ /if }}","            {{ /each }}","        </ul>","    </div>","</div>","","<div class=\"row\">","    <div class=\"small-12 columns\">","        <div class=\"tab-content {{ #isActive 0 }}active{{ /isActive }}\">","            <app-editor></app-editor>","        </div>","        <div class=\"tab-content {{ #isActive 1 }}active{{ /isActive }}\">","            <app-results></app-results>","        </div>","        <div class=\"tab-content {{ #isActive 2 }}active{{ /isActive }}\">","            <article>","                <h2>Not implemented yet</h2>","","                <p>This place could contain people's comments on public scripts.</p>","            </article>","        </div>","    </div>","</div>"].join("\n");
     });
   })();
 
