@@ -70,6 +70,14 @@ a{color:#3e96da}
 #editor .header .icon.right:hover{color:#39424e}
 #editor .content .CodeMirror-lines{font-size:1.2em;line-height:1.3em}
 #editor .footer{border-top:1px solid #c2c7d0;font-family:monospace;padding:16px;background:#fff;text-align:right}
+#results .warning,#results .stdout,#results .stderr{padding:20px}
+#results .warning,#results .stderr{position:relative;min-height:100px;}
+#results .warning .icon,#results .stderr .icon{position:absolute;top:20px;right:20px;font-size:60px}
+#results .warning{background:#faecab;}
+#results .warning .icon{color:#ebdba0}
+#results .stderr{background:#d45659;color:#fff;}
+#results .stderr h2{color:#fff}
+#results .stderr .icon{color:#f35f63}
 #footer{margin-top:20px;border-top:1px solid #e4e4e4;padding:20px 20px 20px 90px;text-align:center;}
 #footer p{font-size:16px}
 #footer ul{list-style-type:none;margin:0;}
@@ -114,6 +122,7 @@ a{color:#3e96da}
 .icon.up-dir:before{content:'\e80e'}
 .icon.search:before{content:'\e80f'}
 .icon.cog:before{content:'\e810'}
+.icon.attention:before{content:'\e812'}
 .icon.chat:before{content:'\e803'}
 .icon.keyboard:before{content:'\e804'}
 .icon.clipboard:before{content:'\e800'}

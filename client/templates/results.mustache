@@ -1,3 +1,30 @@
 <article id="results">
-    <code>{{ job.status }}</code>
+    {{ #isEmpty }}
+    <div class="warning">
+        <h2>Your script has finished</h2>
+        <span class="icon attention"></span>
+        <p>No data were logged into the terminal.</p>
+    </div>
+    {{ /isEmpty }}
+
+    {{ #job.out }}
+        {{ #if stdout.length }}
+            <div class="stdout">
+                <h2>Terminal output</h2>
+            {{ #each stdout }}
+                <pre>{{ . }}</pre>
+            {{ /each }}
+            </div>
+        {{ /if }}
+
+        {{ #if stderr.length }}
+            <div class="stderr">
+                <h2>Errors found</h2>
+                <span class="icon attention"></span>
+            {{ #each stderr }}
+                <pre>{{ . }}</pre>
+            {{ /each }}
+            </div>
+        {{ /if }}
+    {{ /job.out }}
 </article>

@@ -9,4 +9,11 @@ module.exports = can.Component.extend
     scope: (obj, parent, el) ->
         { job }
 
-    helpers: {}
+    helpers:
+        # Is terminal output empty?
+        isEmpty: (opts) ->
+            return unless out = job.attr('out')
+            if out.stdout.length + out.stderr.length
+                opts.inverse(@)
+            else
+                opts.fn(@)

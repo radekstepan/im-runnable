@@ -30546,6 +30546,10 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
         },
         events: {
           '.btn.run click': function() {
+            var src;
+            if (!(src = editor.getValue())) {
+              return;
+            }
             job.submit({
               'src': editor.getValue(),
               'lang': editor.getOption('mode')
@@ -30588,7 +30592,19 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
             job: job
           };
         },
-        helpers: {}
+        helpers: {
+          isEmpty: function(opts) {
+            var out;
+            if (!(out = job.attr('out'))) {
+              return;
+            }
+            if (out.stdout.length + out.stderr.length) {
+              return opts.inverse(this);
+            } else {
+              return opts.fn(this);
+            }
+          }
+        }
       });
       
     });
@@ -30910,13 +30926,6 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
         })();
       });
       
-      job.bind('out', function(ev, newVal, oldVal) {
-        if (!newVal) {
-          return;
-        }
-        return console.log(newVal);
-      });
-      
     });
 
     // languages.coffee
@@ -30981,7 +30990,7 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
     // results.mustache
     root.require.register('runnable/client/templates/results.js', function(exports, require, module) {
     
-      module.exports = ["<article id=\"results\">","    <code>{{ job.status }}</code>","</article>"].join("\n");
+      module.exports = ["<article id=\"results\">","    {{ #isEmpty }}","    <div class=\"warning\">","        <h2>Your script has finished</h2>","        <span class=\"icon attention\"></span>","        <p>No data were logged into the terminal.</p>","    </div>","    {{ /isEmpty }}","","    {{ #job.out }}","        {{ #if stdout.length }}","            <div class=\"stdout\">","                <h2>Terminal output</h2>","            {{ #each stdout }}","                <pre>{{ . }}</pre>","            {{ /each }}","            </div>","        {{ /if }}","","        {{ #if stderr.length }}","            <div class=\"stderr\">","                <h2>Errors found</h2>","                <span class=\"icon attention\"></span>","            {{ #each stderr }}","                <pre>{{ . }}</pre>","            {{ /each }}","            </div>","        {{ /if }}","    {{ /job.out }}","</article>"].join("\n");
     });
 
     // select.mustache

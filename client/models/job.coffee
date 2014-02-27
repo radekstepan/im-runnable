@@ -51,7 +51,3 @@ job.bind 'id', (ev, newId, oldId) ->
         return if newId isnt job.attr('id')
         # And call again.
         job.get get
-
-job.bind 'out', (ev, newVal, oldVal) ->
-    return unless newVal # can be removed, is a change too...
-    console.log newVal

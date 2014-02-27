@@ -26,6 +26,8 @@ module.exports = can.Component.extend
     events:
         # Run.
         '.btn.run click': ->
+            return unless src = do editor.getValue
+            
             # Submit a new job.
             job.submit
                 'src':  do editor.getValue
