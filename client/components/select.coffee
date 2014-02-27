@@ -74,6 +74,7 @@ module.exports = can.Component.extend
         '.field click': (el, evt) ->
             expanded b = not do expanded
             do @element.find('.search .input').focus if b
+            no # we are watching clicks on document too...
 
         # Filter the dropdown.
         '.search .input keyup': (el, evt) ->

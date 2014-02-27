@@ -3,7 +3,7 @@
 $nav-height      = 60px
 $sidebar-width   = 70px
 $highlight-color = #6CC644
-$select-width    = 220px
+$select-width    = 230px
 
 body, h1, h2, h3, h4, h5
     font-family: "Lato"
@@ -362,6 +362,9 @@ a
             font-size: 1.2em
             line-height: 1.3em
 
+        span.cm-variable-2
+            color: $highlight-color
+
     .footer
         border-top: 1px solid #C2C7D0
         font-family: monospace
@@ -370,11 +373,9 @@ a
         text-align: right
 
 #results
-    .warning, .stdout, .stderr
-        padding: 20px
-
-    .warning, .stderr
+    .warning, .notify, .stderr
         position: relative
+        padding: 20px
         min-height: 100px
 
         .icon
@@ -389,6 +390,12 @@ a
         .icon
             color: #EBDBA0
 
+    .notify
+        background: #FAFAFA
+
+        .icon
+            color: rgba(0,0,0,0.2)
+
     .stderr
         background: #D45659
         color: #FFF
@@ -398,6 +405,16 @@ a
 
         .icon
             color: #F35F63
+
+    .stdout
+        .line
+            &:not(:first-child)
+                border-top: 1px solid #F3F1F1
+                margin-top: 10px
+                padding-top: 10px
+
+            span.number
+                color: $highlight-color
 
 #footer
     margin-top: 20px

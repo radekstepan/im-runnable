@@ -29071,6 +29071,387 @@ window.CodeMirror = (function() {
 
   return CodeMirror;
 })();
+;CodeMirror.defineMode("clike", function(config, parserConfig) {
+  var indentUnit = config.indentUnit,
+      statementIndentUnit = parserConfig.statementIndentUnit || indentUnit,
+      dontAlignCalls = parserConfig.dontAlignCalls,
+      keywords = parserConfig.keywords || {},
+      builtin = parserConfig.builtin || {},
+      blockKeywords = parserConfig.blockKeywords || {},
+      atoms = parserConfig.atoms || {},
+      hooks = parserConfig.hooks || {},
+      multiLineStrings = parserConfig.multiLineStrings;
+  var isOperatorChar = /[+\-*&%=<>!?|\/]/;
+
+  var curPunc;
+
+  function tokenBase(stream, state) {
+    var ch = stream.next();
+    if (hooks[ch]) {
+      var result = hooks[ch](stream, state);
+      if (result !== false) return result;
+    }
+    if (ch == '"' || ch == "'") {
+      state.tokenize = tokenString(ch);
+      return state.tokenize(stream, state);
+    }
+    if (/[\[\]{}\(\),;\:\.]/.test(ch)) {
+      curPunc = ch;
+      return null;
+    }
+    if (/\d/.test(ch)) {
+      stream.eatWhile(/[\w\.]/);
+      return "number";
+    }
+    if (ch == "/") {
+      if (stream.eat("*")) {
+        state.tokenize = tokenComment;
+        return tokenComment(stream, state);
+      }
+      if (stream.eat("/")) {
+        stream.skipToEnd();
+        return "comment";
+      }
+    }
+    if (isOperatorChar.test(ch)) {
+      stream.eatWhile(isOperatorChar);
+      return "operator";
+    }
+    stream.eatWhile(/[\w\$_]/);
+    var cur = stream.current();
+    if (keywords.propertyIsEnumerable(cur)) {
+      if (blockKeywords.propertyIsEnumerable(cur)) curPunc = "newstatement";
+      return "keyword";
+    }
+    if (builtin.propertyIsEnumerable(cur)) {
+      if (blockKeywords.propertyIsEnumerable(cur)) curPunc = "newstatement";
+      return "builtin";
+    }
+    if (atoms.propertyIsEnumerable(cur)) return "atom";
+    return "variable";
+  }
+
+  function tokenString(quote) {
+    return function(stream, state) {
+      var escaped = false, next, end = false;
+      while ((next = stream.next()) != null) {
+        if (next == quote && !escaped) {end = true; break;}
+        escaped = !escaped && next == "\\";
+      }
+      if (end || !(escaped || multiLineStrings))
+        state.tokenize = null;
+      return "string";
+    };
+  }
+
+  function tokenComment(stream, state) {
+    var maybeEnd = false, ch;
+    while (ch = stream.next()) {
+      if (ch == "/" && maybeEnd) {
+        state.tokenize = null;
+        break;
+      }
+      maybeEnd = (ch == "*");
+    }
+    return "comment";
+  }
+
+  function Context(indented, column, type, align, prev) {
+    this.indented = indented;
+    this.column = column;
+    this.type = type;
+    this.align = align;
+    this.prev = prev;
+  }
+  function pushContext(state, col, type) {
+    var indent = state.indented;
+    if (state.context && state.context.type == "statement")
+      indent = state.context.indented;
+    return state.context = new Context(indent, col, type, null, state.context);
+  }
+  function popContext(state) {
+    var t = state.context.type;
+    if (t == ")" || t == "]" || t == "}")
+      state.indented = state.context.indented;
+    return state.context = state.context.prev;
+  }
+
+  // Interface
+
+  return {
+    startState: function(basecolumn) {
+      return {
+        tokenize: null,
+        context: new Context((basecolumn || 0) - indentUnit, 0, "top", false),
+        indented: 0,
+        startOfLine: true
+      };
+    },
+
+    token: function(stream, state) {
+      var ctx = state.context;
+      if (stream.sol()) {
+        if (ctx.align == null) ctx.align = false;
+        state.indented = stream.indentation();
+        state.startOfLine = true;
+      }
+      if (stream.eatSpace()) return null;
+      curPunc = null;
+      var style = (state.tokenize || tokenBase)(stream, state);
+      if (style == "comment" || style == "meta") return style;
+      if (ctx.align == null) ctx.align = true;
+
+      if ((curPunc == ";" || curPunc == ":" || curPunc == ",") && ctx.type == "statement") popContext(state);
+      else if (curPunc == "{") pushContext(state, stream.column(), "}");
+      else if (curPunc == "[") pushContext(state, stream.column(), "]");
+      else if (curPunc == "(") pushContext(state, stream.column(), ")");
+      else if (curPunc == "}") {
+        while (ctx.type == "statement") ctx = popContext(state);
+        if (ctx.type == "}") ctx = popContext(state);
+        while (ctx.type == "statement") ctx = popContext(state);
+      }
+      else if (curPunc == ctx.type) popContext(state);
+      else if (((ctx.type == "}" || ctx.type == "top") && curPunc != ';') || (ctx.type == "statement" && curPunc == "newstatement"))
+        pushContext(state, stream.column(), "statement");
+      state.startOfLine = false;
+      return style;
+    },
+
+    indent: function(state, textAfter) {
+      if (state.tokenize != tokenBase && state.tokenize != null) return CodeMirror.Pass;
+      var ctx = state.context, firstChar = textAfter && textAfter.charAt(0);
+      if (ctx.type == "statement" && firstChar == "}") ctx = ctx.prev;
+      var closing = firstChar == ctx.type;
+      if (ctx.type == "statement") return ctx.indented + (firstChar == "{" ? 0 : statementIndentUnit);
+      else if (ctx.align && (!dontAlignCalls || ctx.type != ")")) return ctx.column + (closing ? 0 : 1);
+      else if (ctx.type == ")" && !closing) return ctx.indented + statementIndentUnit;
+      else return ctx.indented + (closing ? 0 : indentUnit);
+    },
+
+    electricChars: "{}",
+    blockCommentStart: "/*",
+    blockCommentEnd: "*/",
+    lineComment: "//",
+    fold: "brace"
+  };
+});
+
+(function() {
+  function words(str) {
+    var obj = {}, words = str.split(" ");
+    for (var i = 0; i < words.length; ++i) obj[words[i]] = true;
+    return obj;
+  }
+  var cKeywords = "auto if break int case long char register continue return default short do sizeof " +
+    "double static else struct entry switch extern typedef float union for unsigned " +
+    "goto while enum void const signed volatile";
+
+  function cppHook(stream, state) {
+    if (!state.startOfLine) return false;
+    for (;;) {
+      if (stream.skipTo("\\")) {
+        stream.next();
+        if (stream.eol()) {
+          state.tokenize = cppHook;
+          break;
+        }
+      } else {
+        stream.skipToEnd();
+        state.tokenize = null;
+        break;
+      }
+    }
+    return "meta";
+  }
+
+  // C#-style strings where "" escapes a quote.
+  function tokenAtString(stream, state) {
+    var next;
+    while ((next = stream.next()) != null) {
+      if (next == '"' && !stream.eat('"')) {
+        state.tokenize = null;
+        break;
+      }
+    }
+    return "string";
+  }
+
+  function def(mimes, mode) {
+    var words = [];
+    function add(obj) {
+      if (obj) for (var prop in obj) if (obj.hasOwnProperty(prop))
+        words.push(prop);
+    }
+    add(mode.keywords);
+    add(mode.builtin);
+    add(mode.atoms);
+    if (words.length) {
+      mode.helperType = mimes[0];
+      CodeMirror.registerHelper("hintWords", mimes[0], words);
+    }
+
+    for (var i = 0; i < mimes.length; ++i)
+      CodeMirror.defineMIME(mimes[i], mode);
+  }
+
+  def(["text/x-csrc", "text/x-c", "text/x-chdr"], {
+    name: "clike",
+    keywords: words(cKeywords),
+    blockKeywords: words("case do else for if switch while struct"),
+    atoms: words("null"),
+    hooks: {"#": cppHook},
+    modeProps: {fold: ["brace", "include"]}
+  });
+
+  def(["text/x-c++src", "text/x-c++hdr"], {
+    name: "clike",
+    keywords: words(cKeywords + " asm dynamic_cast namespace reinterpret_cast try bool explicit new " +
+                    "static_cast typeid catch operator template typename class friend private " +
+                    "this using const_cast inline public throw virtual delete mutable protected " +
+                    "wchar_t"),
+    blockKeywords: words("catch class do else finally for if struct switch try while"),
+    atoms: words("true false null"),
+    hooks: {"#": cppHook},
+    modeProps: {fold: ["brace", "include"]}
+  });
+  CodeMirror.defineMIME("text/x-java", {
+    name: "clike",
+    keywords: words("abstract assert boolean break byte case catch char class const continue default " +
+                    "do double else enum extends final finally float for goto if implements import " +
+                    "instanceof int interface long native new package private protected public " +
+                    "return short static strictfp super switch synchronized this throw throws transient " +
+                    "try void volatile while"),
+    blockKeywords: words("catch class do else finally for if switch try while"),
+    atoms: words("true false null"),
+    hooks: {
+      "@": function(stream) {
+        stream.eatWhile(/[\w\$_]/);
+        return "meta";
+      }
+    },
+    modeProps: {fold: ["brace", "import"]}
+  });
+  CodeMirror.defineMIME("text/x-csharp", {
+    name: "clike",
+    keywords: words("abstract as base break case catch checked class const continue" +
+                    " default delegate do else enum event explicit extern finally fixed for" +
+                    " foreach goto if implicit in interface internal is lock namespace new" +
+                    " operator out override params private protected public readonly ref return sealed" +
+                    " sizeof stackalloc static struct switch this throw try typeof unchecked" +
+                    " unsafe using virtual void volatile while add alias ascending descending dynamic from get" +
+                    " global group into join let orderby partial remove select set value var yield"),
+    blockKeywords: words("catch class do else finally for foreach if struct switch try while"),
+    builtin: words("Boolean Byte Char DateTime DateTimeOffset Decimal Double" +
+                    " Guid Int16 Int32 Int64 Object SByte Single String TimeSpan UInt16 UInt32" +
+                    " UInt64 bool byte char decimal double short int long object"  +
+                    " sbyte float string ushort uint ulong"),
+    atoms: words("true false null"),
+    hooks: {
+      "@": function(stream, state) {
+        if (stream.eat('"')) {
+          state.tokenize = tokenAtString;
+          return tokenAtString(stream, state);
+        }
+        stream.eatWhile(/[\w\$_]/);
+        return "meta";
+      }
+    }
+  });
+  CodeMirror.defineMIME("text/x-scala", {
+    name: "clike",
+    keywords: words(
+
+      /* scala */
+      "abstract case catch class def do else extends false final finally for forSome if " +
+      "implicit import lazy match new null object override package private protected return " +
+      "sealed super this throw trait try trye type val var while with yield _ : = => <- <: " +
+      "<% >: # @ " +
+
+      /* package scala */
+      "assert assume require print println printf readLine readBoolean readByte readShort " +
+      "readChar readInt readLong readFloat readDouble " +
+
+      "AnyVal App Application Array BufferedIterator BigDecimal BigInt Char Console Either " +
+      "Enumeration Equiv Error Exception Fractional Function IndexedSeq Integral Iterable " +
+      "Iterator List Map Numeric Nil NotNull Option Ordered Ordering PartialFunction PartialOrdering " +
+      "Product Proxy Range Responder Seq Serializable Set Specializable Stream StringBuilder " +
+      "StringContext Symbol Throwable Traversable TraversableOnce Tuple Unit Vector :: #:: " +
+
+      /* package java.lang */
+      "Boolean Byte Character CharSequence Class ClassLoader Cloneable Comparable " +
+      "Compiler Double Exception Float Integer Long Math Number Object Package Pair Process " +
+      "Runtime Runnable SecurityManager Short StackTraceElement StrictMath String " +
+      "StringBuffer System Thread ThreadGroup ThreadLocal Throwable Triple Void"
+
+
+    ),
+    blockKeywords: words("catch class do else finally for forSome if match switch try while"),
+    atoms: words("true false null"),
+    hooks: {
+      "@": function(stream) {
+        stream.eatWhile(/[\w\$_]/);
+        return "meta";
+      }
+    }
+  });
+  def(["x-shader/x-vertex", "x-shader/x-fragment"], {
+    name: "clike",
+    keywords: words("float int bool void " +
+                    "vec2 vec3 vec4 ivec2 ivec3 ivec4 bvec2 bvec3 bvec4 " +
+                    "mat2 mat3 mat4 " +
+                    "sampler1D sampler2D sampler3D samplerCube " +
+                    "sampler1DShadow sampler2DShadow" +
+                    "const attribute uniform varying " +
+                    "break continue discard return " +
+                    "for while do if else struct " +
+                    "in out inout"),
+    blockKeywords: words("for while do if else struct"),
+    builtin: words("radians degrees sin cos tan asin acos atan " +
+                    "pow exp log exp2 sqrt inversesqrt " +
+                    "abs sign floor ceil fract mod min max clamp mix step smootstep " +
+                    "length distance dot cross normalize ftransform faceforward " +
+                    "reflect refract matrixCompMult " +
+                    "lessThan lessThanEqual greaterThan greaterThanEqual " +
+                    "equal notEqual any all not " +
+                    "texture1D texture1DProj texture1DLod texture1DProjLod " +
+                    "texture2D texture2DProj texture2DLod texture2DProjLod " +
+                    "texture3D texture3DProj texture3DLod texture3DProjLod " +
+                    "textureCube textureCubeLod " +
+                    "shadow1D shadow2D shadow1DProj shadow2DProj " +
+                    "shadow1DLod shadow2DLod shadow1DProjLod shadow2DProjLod " +
+                    "dFdx dFdy fwidth " +
+                    "noise1 noise2 noise3 noise4"),
+    atoms: words("true false " +
+                "gl_FragColor gl_SecondaryColor gl_Normal gl_Vertex " +
+                "gl_MultiTexCoord0 gl_MultiTexCoord1 gl_MultiTexCoord2 gl_MultiTexCoord3 " +
+                "gl_MultiTexCoord4 gl_MultiTexCoord5 gl_MultiTexCoord6 gl_MultiTexCoord7 " +
+                "gl_FogCoord " +
+                "gl_Position gl_PointSize gl_ClipVertex " +
+                "gl_FrontColor gl_BackColor gl_FrontSecondaryColor gl_BackSecondaryColor " +
+                "gl_TexCoord gl_FogFragCoord " +
+                "gl_FragCoord gl_FrontFacing " +
+                "gl_FragColor gl_FragData gl_FragDepth " +
+                "gl_ModelViewMatrix gl_ProjectionMatrix gl_ModelViewProjectionMatrix " +
+                "gl_TextureMatrix gl_NormalMatrix gl_ModelViewMatrixInverse " +
+                "gl_ProjectionMatrixInverse gl_ModelViewProjectionMatrixInverse " +
+                "gl_TexureMatrixTranspose gl_ModelViewMatrixInverseTranspose " +
+                "gl_ProjectionMatrixInverseTranspose " +
+                "gl_ModelViewProjectionMatrixInverseTranspose " +
+                "gl_TextureMatrixInverseTranspose " +
+                "gl_NormalScale gl_DepthRange gl_ClipPlane " +
+                "gl_Point gl_FrontMaterial gl_BackMaterial gl_LightSource gl_LightModel " +
+                "gl_FrontLightModelProduct gl_BackLightModelProduct " +
+                "gl_TextureColor gl_EyePlaneS gl_EyePlaneT gl_EyePlaneR gl_EyePlaneQ " +
+                "gl_FogParameters " +
+                "gl_MaxLights gl_MaxClipPlanes gl_MaxTextureUnits gl_MaxTextureCoords " +
+                "gl_MaxVertexAttribs gl_MaxVertexUniformComponents gl_MaxVaryingFloats " +
+                "gl_MaxVertexTextureImageUnits gl_MaxTextureImageUnits " +
+                "gl_MaxFragmentUniformComponents gl_MaxCombineTextureImageUnits " +
+                "gl_MaxDrawBuffers"),
+    hooks: {"#": cppHook},
+    modeProps: {fold: ["brace", "include"]}
+  });
+}());
 ;// TODO actually recognize syntax of TypeScript constructs
 
 CodeMirror.defineMode("javascript", function(config, parserConfig) {
@@ -30054,6 +30435,1196 @@ CodeMirror.defineMode("coffeescript", function(conf) {
 });
 
 CodeMirror.defineMIME("text/x-coffeescript", "coffeescript");
+;// CodeMirror2 mode/perl/perl.js (text/x-perl) beta 0.10 (2011-11-08)
+// This is a part of CodeMirror from https://github.com/sabaca/CodeMirror_mode_perl (mail@sabaca.com)
+CodeMirror.defineMode("perl",function(){
+        // http://perldoc.perl.org
+        var PERL={                                      //   null - magic touch
+                                                        //   1 - keyword
+                                                        //   2 - def
+                                                        //   3 - atom
+                                                        //   4 - operator
+                                                        //   5 - variable-2 (predefined)
+                                                        //   [x,y] - x=1,2,3; y=must be defined if x{...}
+                                                //      PERL operators
+                '->'                            :   4,
+                '++'                            :   4,
+                '--'                            :   4,
+                '**'                            :   4,
+                                                        //   ! ~ \ and unary + and -
+                '=~'                            :   4,
+                '!~'                            :   4,
+                '*'                             :   4,
+                '/'                             :   4,
+                '%'                             :   4,
+                'x'                             :   4,
+                '+'                             :   4,
+                '-'                             :   4,
+                '.'                             :   4,
+                '<<'                            :   4,
+                '>>'                            :   4,
+                                                        //   named unary operators
+                '<'                             :   4,
+                '>'                             :   4,
+                '<='                            :   4,
+                '>='                            :   4,
+                'lt'                            :   4,
+                'gt'                            :   4,
+                'le'                            :   4,
+                'ge'                            :   4,
+                '=='                            :   4,
+                '!='                            :   4,
+                '<=>'                           :   4,
+                'eq'                            :   4,
+                'ne'                            :   4,
+                'cmp'                           :   4,
+                '~~'                            :   4,
+                '&'                             :   4,
+                '|'                             :   4,
+                '^'                             :   4,
+                '&&'                            :   4,
+                '||'                            :   4,
+                '//'                            :   4,
+                '..'                            :   4,
+                '...'                           :   4,
+                '?'                             :   4,
+                ':'                             :   4,
+                '='                             :   4,
+                '+='                            :   4,
+                '-='                            :   4,
+                '*='                            :   4,  //   etc. ???
+                ','                             :   4,
+                '=>'                            :   4,
+                '::'                            :   4,
+                                                        //   list operators (rightward)
+                'not'                           :   4,
+                'and'                           :   4,
+                'or'                            :   4,
+                'xor'                           :   4,
+                                                //      PERL predefined variables (I know, what this is a paranoid idea, but may be needed for people, who learn PERL, and for me as well, ...and may be for you?;)
+                'BEGIN'                         :   [5,1],
+                'END'                           :   [5,1],
+                'PRINT'                         :   [5,1],
+                'PRINTF'                        :   [5,1],
+                'GETC'                          :   [5,1],
+                'READ'                          :   [5,1],
+                'READLINE'                      :   [5,1],
+                'DESTROY'                       :   [5,1],
+                'TIE'                           :   [5,1],
+                'TIEHANDLE'                     :   [5,1],
+                'UNTIE'                         :   [5,1],
+                'STDIN'                         :    5,
+                'STDIN_TOP'                     :    5,
+                'STDOUT'                        :    5,
+                'STDOUT_TOP'                    :    5,
+                'STDERR'                        :    5,
+                'STDERR_TOP'                    :    5,
+                '$ARG'                          :    5,
+                '$_'                            :    5,
+                '@ARG'                          :    5,
+                '@_'                            :    5,
+                '$LIST_SEPARATOR'               :    5,
+                '$"'                            :    5,
+                '$PROCESS_ID'                   :    5,
+                '$PID'                          :    5,
+                '$$'                            :    5,
+                '$REAL_GROUP_ID'                :    5,
+                '$GID'                          :    5,
+                '$('                            :    5,
+                '$EFFECTIVE_GROUP_ID'           :    5,
+                '$EGID'                         :    5,
+                '$)'                            :    5,
+                '$PROGRAM_NAME'                 :    5,
+                '$0'                            :    5,
+                '$SUBSCRIPT_SEPARATOR'          :    5,
+                '$SUBSEP'                       :    5,
+                '$;'                            :    5,
+                '$REAL_USER_ID'                 :    5,
+                '$UID'                          :    5,
+                '$<'                            :    5,
+                '$EFFECTIVE_USER_ID'            :    5,
+                '$EUID'                         :    5,
+                '$>'                            :    5,
+                '$a'                            :    5,
+                '$b'                            :    5,
+                '$COMPILING'                    :    5,
+                '$^C'                           :    5,
+                '$DEBUGGING'                    :    5,
+                '$^D'                           :    5,
+                '${^ENCODING}'                  :    5,
+                '$ENV'                          :    5,
+                '%ENV'                          :    5,
+                '$SYSTEM_FD_MAX'                :    5,
+                '$^F'                           :    5,
+                '@F'                            :    5,
+                '${^GLOBAL_PHASE}'              :    5,
+                '$^H'                           :    5,
+                '%^H'                           :    5,
+                '@INC'                          :    5,
+                '%INC'                          :    5,
+                '$INPLACE_EDIT'                 :    5,
+                '$^I'                           :    5,
+                '$^M'                           :    5,
+                '$OSNAME'                       :    5,
+                '$^O'                           :    5,
+                '${^OPEN}'                      :    5,
+                '$PERLDB'                       :    5,
+                '$^P'                           :    5,
+                '$SIG'                          :    5,
+                '%SIG'                          :    5,
+                '$BASETIME'                     :    5,
+                '$^T'                           :    5,
+                '${^TAINT}'                     :    5,
+                '${^UNICODE}'                   :    5,
+                '${^UTF8CACHE}'                 :    5,
+                '${^UTF8LOCALE}'                :    5,
+                '$PERL_VERSION'                 :    5,
+                '$^V'                           :    5,
+                '${^WIN32_SLOPPY_STAT}'         :    5,
+                '$EXECUTABLE_NAME'              :    5,
+                '$^X'                           :    5,
+                '$1'                            :    5, // - regexp $1, $2...
+                '$MATCH'                        :    5,
+                '$&'                            :    5,
+                '${^MATCH}'                     :    5,
+                '$PREMATCH'                     :    5,
+                '$`'                            :    5,
+                '${^PREMATCH}'                  :    5,
+                '$POSTMATCH'                    :    5,
+                "$'"                            :    5,
+                '${^POSTMATCH}'                 :    5,
+                '$LAST_PAREN_MATCH'             :    5,
+                '$+'                            :    5,
+                '$LAST_SUBMATCH_RESULT'         :    5,
+                '$^N'                           :    5,
+                '@LAST_MATCH_END'               :    5,
+                '@+'                            :    5,
+                '%LAST_PAREN_MATCH'             :    5,
+                '%+'                            :    5,
+                '@LAST_MATCH_START'             :    5,
+                '@-'                            :    5,
+                '%LAST_MATCH_START'             :    5,
+                '%-'                            :    5,
+                '$LAST_REGEXP_CODE_RESULT'      :    5,
+                '$^R'                           :    5,
+                '${^RE_DEBUG_FLAGS}'            :    5,
+                '${^RE_TRIE_MAXBUF}'            :    5,
+                '$ARGV'                         :    5,
+                '@ARGV'                         :    5,
+                'ARGV'                          :    5,
+                'ARGVOUT'                       :    5,
+                '$OUTPUT_FIELD_SEPARATOR'       :    5,
+                '$OFS'                          :    5,
+                '$,'                            :    5,
+                '$INPUT_LINE_NUMBER'            :    5,
+                '$NR'                           :    5,
+                '$.'                            :    5,
+                '$INPUT_RECORD_SEPARATOR'       :    5,
+                '$RS'                           :    5,
+                '$/'                            :    5,
+                '$OUTPUT_RECORD_SEPARATOR'      :    5,
+                '$ORS'                          :    5,
+                '$\\'                           :    5,
+                '$OUTPUT_AUTOFLUSH'             :    5,
+                '$|'                            :    5,
+                '$ACCUMULATOR'                  :    5,
+                '$^A'                           :    5,
+                '$FORMAT_FORMFEED'              :    5,
+                '$^L'                           :    5,
+                '$FORMAT_PAGE_NUMBER'           :    5,
+                '$%'                            :    5,
+                '$FORMAT_LINES_LEFT'            :    5,
+                '$-'                            :    5,
+                '$FORMAT_LINE_BREAK_CHARACTERS' :    5,
+                '$:'                            :    5,
+                '$FORMAT_LINES_PER_PAGE'        :    5,
+                '$='                            :    5,
+                '$FORMAT_TOP_NAME'              :    5,
+                '$^'                            :    5,
+                '$FORMAT_NAME'                  :    5,
+                '$~'                            :    5,
+                '${^CHILD_ERROR_NATIVE}'        :    5,
+                '$EXTENDED_OS_ERROR'            :    5,
+                '$^E'                           :    5,
+                '$EXCEPTIONS_BEING_CAUGHT'      :    5,
+                '$^S'                           :    5,
+                '$WARNING'                      :    5,
+                '$^W'                           :    5,
+                '${^WARNING_BITS}'              :    5,
+                '$OS_ERROR'                     :    5,
+                '$ERRNO'                        :    5,
+                '$!'                            :    5,
+                '%OS_ERROR'                     :    5,
+                '%ERRNO'                        :    5,
+                '%!'                            :    5,
+                '$CHILD_ERROR'                  :    5,
+                '$?'                            :    5,
+                '$EVAL_ERROR'                   :    5,
+                '$@'                            :    5,
+                '$OFMT'                         :    5,
+                '$#'                            :    5,
+                '$*'                            :    5,
+                '$ARRAY_BASE'                   :    5,
+                '$['                            :    5,
+                '$OLD_PERL_VERSION'             :    5,
+                '$]'                            :    5,
+                                                //      PERL blocks
+                'if'                            :[1,1],
+                elsif                           :[1,1],
+                'else'                          :[1,1],
+                'while'                         :[1,1],
+                unless                          :[1,1],
+                'for'                           :[1,1],
+                foreach                         :[1,1],
+                                                //      PERL functions
+                'abs'                           :1,     // - absolute value function
+                accept                          :1,     // - accept an incoming socket connect
+                alarm                           :1,     // - schedule a SIGALRM
+                'atan2'                         :1,     // - arctangent of Y/X in the range -PI to PI
+                bind                            :1,     // - binds an address to a socket
+                binmode                         :1,     // - prepare binary files for I/O
+                bless                           :1,     // - create an object
+                bootstrap                       :1,     //
+                'break'                         :1,     // - break out of a "given" block
+                caller                          :1,     // - get context of the current subroutine call
+                chdir                           :1,     // - change your current working directory
+                chmod                           :1,     // - changes the permissions on a list of files
+                chomp                           :1,     // - remove a trailing record separator from a string
+                chop                            :1,     // - remove the last character from a string
+                chown                           :1,     // - change the owership on a list of files
+                chr                             :1,     // - get character this number represents
+                chroot                          :1,     // - make directory new root for path lookups
+                close                           :1,     // - close file (or pipe or socket) handle
+                closedir                        :1,     // - close directory handle
+                connect                         :1,     // - connect to a remote socket
+                'continue'                      :[1,1], // - optional trailing block in a while or foreach
+                'cos'                           :1,     // - cosine function
+                crypt                           :1,     // - one-way passwd-style encryption
+                dbmclose                        :1,     // - breaks binding on a tied dbm file
+                dbmopen                         :1,     // - create binding on a tied dbm file
+                'default'                       :1,     //
+                defined                         :1,     // - test whether a value, variable, or function is defined
+                'delete'                        :1,     // - deletes a value from a hash
+                die                             :1,     // - raise an exception or bail out
+                'do'                            :1,     // - turn a BLOCK into a TERM
+                dump                            :1,     // - create an immediate core dump
+                each                            :1,     // - retrieve the next key/value pair from a hash
+                endgrent                        :1,     // - be done using group file
+                endhostent                      :1,     // - be done using hosts file
+                endnetent                       :1,     // - be done using networks file
+                endprotoent                     :1,     // - be done using protocols file
+                endpwent                        :1,     // - be done using passwd file
+                endservent                      :1,     // - be done using services file
+                eof                             :1,     // - test a filehandle for its end
+                'eval'                          :1,     // - catch exceptions or compile and run code
+                'exec'                          :1,     // - abandon this program to run another
+                exists                          :1,     // - test whether a hash key is present
+                exit                            :1,     // - terminate this program
+                'exp'                           :1,     // - raise I to a power
+                fcntl                           :1,     // - file control system call
+                fileno                          :1,     // - return file descriptor from filehandle
+                flock                           :1,     // - lock an entire file with an advisory lock
+                fork                            :1,     // - create a new process just like this one
+                format                          :1,     // - declare a picture format with use by the write() function
+                formline                        :1,     // - internal function used for formats
+                getc                            :1,     // - get the next character from the filehandle
+                getgrent                        :1,     // - get next group record
+                getgrgid                        :1,     // - get group record given group user ID
+                getgrnam                        :1,     // - get group record given group name
+                gethostbyaddr                   :1,     // - get host record given its address
+                gethostbyname                   :1,     // - get host record given name
+                gethostent                      :1,     // - get next hosts record
+                getlogin                        :1,     // - return who logged in at this tty
+                getnetbyaddr                    :1,     // - get network record given its address
+                getnetbyname                    :1,     // - get networks record given name
+                getnetent                       :1,     // - get next networks record
+                getpeername                     :1,     // - find the other end of a socket connection
+                getpgrp                         :1,     // - get process group
+                getppid                         :1,     // - get parent process ID
+                getpriority                     :1,     // - get current nice value
+                getprotobyname                  :1,     // - get protocol record given name
+                getprotobynumber                :1,     // - get protocol record numeric protocol
+                getprotoent                     :1,     // - get next protocols record
+                getpwent                        :1,     // - get next passwd record
+                getpwnam                        :1,     // - get passwd record given user login name
+                getpwuid                        :1,     // - get passwd record given user ID
+                getservbyname                   :1,     // - get services record given its name
+                getservbyport                   :1,     // - get services record given numeric port
+                getservent                      :1,     // - get next services record
+                getsockname                     :1,     // - retrieve the sockaddr for a given socket
+                getsockopt                      :1,     // - get socket options on a given socket
+                given                           :1,     //
+                glob                            :1,     // - expand filenames using wildcards
+                gmtime                          :1,     // - convert UNIX time into record or string using Greenwich time
+                'goto'                          :1,     // - create spaghetti code
+                grep                            :1,     // - locate elements in a list test true against a given criterion
+                hex                             :1,     // - convert a string to a hexadecimal number
+                'import'                        :1,     // - patch a module's namespace into your own
+                index                           :1,     // - find a substring within a string
+                'int'                           :1,     // - get the integer portion of a number
+                ioctl                           :1,     // - system-dependent device control system call
+                'join'                          :1,     // - join a list into a string using a separator
+                keys                            :1,     // - retrieve list of indices from a hash
+                kill                            :1,     // - send a signal to a process or process group
+                last                            :1,     // - exit a block prematurely
+                lc                              :1,     // - return lower-case version of a string
+                lcfirst                         :1,     // - return a string with just the next letter in lower case
+                length                          :1,     // - return the number of bytes in a string
+                'link'                          :1,     // - create a hard link in the filesytem
+                listen                          :1,     // - register your socket as a server
+                local                           : 2,    // - create a temporary value for a global variable (dynamic scoping)
+                localtime                       :1,     // - convert UNIX time into record or string using local time
+                lock                            :1,     // - get a thread lock on a variable, subroutine, or method
+                'log'                           :1,     // - retrieve the natural logarithm for a number
+                lstat                           :1,     // - stat a symbolic link
+                m                               :null,  // - match a string with a regular expression pattern
+                map                             :1,     // - apply a change to a list to get back a new list with the changes
+                mkdir                           :1,     // - create a directory
+                msgctl                          :1,     // - SysV IPC message control operations
+                msgget                          :1,     // - get SysV IPC message queue
+                msgrcv                          :1,     // - receive a SysV IPC message from a message queue
+                msgsnd                          :1,     // - send a SysV IPC message to a message queue
+                my                              : 2,    // - declare and assign a local variable (lexical scoping)
+                'new'                           :1,     //
+                next                            :1,     // - iterate a block prematurely
+                no                              :1,     // - unimport some module symbols or semantics at compile time
+                oct                             :1,     // - convert a string to an octal number
+                open                            :1,     // - open a file, pipe, or descriptor
+                opendir                         :1,     // - open a directory
+                ord                             :1,     // - find a character's numeric representation
+                our                             : 2,    // - declare and assign a package variable (lexical scoping)
+                pack                            :1,     // - convert a list into a binary representation
+                'package'                       :1,     // - declare a separate global namespace
+                pipe                            :1,     // - open a pair of connected filehandles
+                pop                             :1,     // - remove the last element from an array and return it
+                pos                             :1,     // - find or set the offset for the last/next m//g search
+                print                           :1,     // - output a list to a filehandle
+                printf                          :1,     // - output a formatted list to a filehandle
+                prototype                       :1,     // - get the prototype (if any) of a subroutine
+                push                            :1,     // - append one or more elements to an array
+                q                               :null,  // - singly quote a string
+                qq                              :null,  // - doubly quote a string
+                qr                              :null,  // - Compile pattern
+                quotemeta                       :null,  // - quote regular expression magic characters
+                qw                              :null,  // - quote a list of words
+                qx                              :null,  // - backquote quote a string
+                rand                            :1,     // - retrieve the next pseudorandom number
+                read                            :1,     // - fixed-length buffered input from a filehandle
+                readdir                         :1,     // - get a directory from a directory handle
+                readline                        :1,     // - fetch a record from a file
+                readlink                        :1,     // - determine where a symbolic link is pointing
+                readpipe                        :1,     // - execute a system command and collect standard output
+                recv                            :1,     // - receive a message over a Socket
+                redo                            :1,     // - start this loop iteration over again
+                ref                             :1,     // - find out the type of thing being referenced
+                rename                          :1,     // - change a filename
+                require                         :1,     // - load in external functions from a library at runtime
+                reset                           :1,     // - clear all variables of a given name
+                'return'                        :1,     // - get out of a function early
+                reverse                         :1,     // - flip a string or a list
+                rewinddir                       :1,     // - reset directory handle
+                rindex                          :1,     // - right-to-left substring search
+                rmdir                           :1,     // - remove a directory
+                s                               :null,  // - replace a pattern with a string
+                say                             :1,     // - print with newline
+                scalar                          :1,     // - force a scalar context
+                seek                            :1,     // - reposition file pointer for random-access I/O
+                seekdir                         :1,     // - reposition directory pointer
+                select                          :1,     // - reset default output or do I/O multiplexing
+                semctl                          :1,     // - SysV semaphore control operations
+                semget                          :1,     // - get set of SysV semaphores
+                semop                           :1,     // - SysV semaphore operations
+                send                            :1,     // - send a message over a socket
+                setgrent                        :1,     // - prepare group file for use
+                sethostent                      :1,     // - prepare hosts file for use
+                setnetent                       :1,     // - prepare networks file for use
+                setpgrp                         :1,     // - set the process group of a process
+                setpriority                     :1,     // - set a process's nice value
+                setprotoent                     :1,     // - prepare protocols file for use
+                setpwent                        :1,     // - prepare passwd file for use
+                setservent                      :1,     // - prepare services file for use
+                setsockopt                      :1,     // - set some socket options
+                shift                           :1,     // - remove the first element of an array, and return it
+                shmctl                          :1,     // - SysV shared memory operations
+                shmget                          :1,     // - get SysV shared memory segment identifier
+                shmread                         :1,     // - read SysV shared memory
+                shmwrite                        :1,     // - write SysV shared memory
+                shutdown                        :1,     // - close down just half of a socket connection
+                'sin'                           :1,     // - return the sine of a number
+                sleep                           :1,     // - block for some number of seconds
+                socket                          :1,     // - create a socket
+                socketpair                      :1,     // - create a pair of sockets
+                'sort'                          :1,     // - sort a list of values
+                splice                          :1,     // - add or remove elements anywhere in an array
+                'split'                         :1,     // - split up a string using a regexp delimiter
+                sprintf                         :1,     // - formatted print into a string
+                'sqrt'                          :1,     // - square root function
+                srand                           :1,     // - seed the random number generator
+                stat                            :1,     // - get a file's status information
+                state                           :1,     // - declare and assign a state variable (persistent lexical scoping)
+                study                           :1,     // - optimize input data for repeated searches
+                'sub'                           :1,     // - declare a subroutine, possibly anonymously
+                'substr'                        :1,     // - get or alter a portion of a stirng
+                symlink                         :1,     // - create a symbolic link to a file
+                syscall                         :1,     // - execute an arbitrary system call
+                sysopen                         :1,     // - open a file, pipe, or descriptor
+                sysread                         :1,     // - fixed-length unbuffered input from a filehandle
+                sysseek                         :1,     // - position I/O pointer on handle used with sysread and syswrite
+                system                          :1,     // - run a separate program
+                syswrite                        :1,     // - fixed-length unbuffered output to a filehandle
+                tell                            :1,     // - get current seekpointer on a filehandle
+                telldir                         :1,     // - get current seekpointer on a directory handle
+                tie                             :1,     // - bind a variable to an object class
+                tied                            :1,     // - get a reference to the object underlying a tied variable
+                time                            :1,     // - return number of seconds since 1970
+                times                           :1,     // - return elapsed time for self and child processes
+                tr                              :null,  // - transliterate a string
+                truncate                        :1,     // - shorten a file
+                uc                              :1,     // - return upper-case version of a string
+                ucfirst                         :1,     // - return a string with just the next letter in upper case
+                umask                           :1,     // - set file creation mode mask
+                undef                           :1,     // - remove a variable or function definition
+                unlink                          :1,     // - remove one link to a file
+                unpack                          :1,     // - convert binary structure into normal perl variables
+                unshift                         :1,     // - prepend more elements to the beginning of a list
+                untie                           :1,     // - break a tie binding to a variable
+                use                             :1,     // - load in a module at compile time
+                utime                           :1,     // - set a file's last access and modify times
+                values                          :1,     // - return a list of the values in a hash
+                vec                             :1,     // - test or set particular bits in a string
+                wait                            :1,     // - wait for any child process to die
+                waitpid                         :1,     // - wait for a particular child process to die
+                wantarray                       :1,     // - get void vs scalar vs list context of current subroutine call
+                warn                            :1,     // - print debugging info
+                when                            :1,     //
+                write                           :1,     // - print a picture record
+                y                               :null}; // - transliterate a string
+
+        var RXstyle="string-2";
+        var RXmodifiers=/[goseximacplud]/;              // NOTE: "m", "s", "y" and "tr" need to correct real modifiers for each regexp type
+
+        function tokenChain(stream,state,chain,style,tail){     // NOTE: chain.length > 2 is not working now (it's for s[...][...]geos;)
+                state.chain=null;                               //                                                          12   3tail
+                state.style=null;
+                state.tail=null;
+                state.tokenize=function(stream,state){
+                        var e=false,c,i=0;
+                        while(c=stream.next()){
+                                if(c===chain[i]&&!e){
+                                        if(chain[++i]!==undefined){
+                                                state.chain=chain[i];
+                                                state.style=style;
+                                                state.tail=tail;}
+                                        else if(tail)
+                                                stream.eatWhile(tail);
+                                        state.tokenize=tokenPerl;
+                                        return style;}
+                                e=!e&&c=="\\";}
+                        return style;};
+                return state.tokenize(stream,state);}
+
+        function tokenSOMETHING(stream,state,string){
+                state.tokenize=function(stream,state){
+                        if(stream.string==string)
+                                state.tokenize=tokenPerl;
+                        stream.skipToEnd();
+                        return "string";};
+                return state.tokenize(stream,state);}
+
+        function tokenPerl(stream,state){
+                if(stream.eatSpace())
+                        return null;
+                if(state.chain)
+                        return tokenChain(stream,state,state.chain,state.style,state.tail);
+                if(stream.match(/^\-?[\d\.]/,false))
+                        if(stream.match(/^(\-?(\d*\.\d+(e[+-]?\d+)?|\d+\.\d*)|0x[\da-fA-F]+|0b[01]+|\d+(e[+-]?\d+)?)/))
+                                return 'number';
+                if(stream.match(/^<<(?=\w)/)){                  // NOTE: <<SOMETHING\n...\nSOMETHING\n
+                        stream.eatWhile(/\w/);
+                        return tokenSOMETHING(stream,state,stream.current().substr(2));}
+                if(stream.sol()&&stream.match(/^\=item(?!\w)/)){// NOTE: \n=item...\n=cut\n
+                        return tokenSOMETHING(stream,state,'=cut');}
+                var ch=stream.next();
+                if(ch=='"'||ch=="'"){                           // NOTE: ' or " or <<'SOMETHING'\n...\nSOMETHING\n or <<"SOMETHING"\n...\nSOMETHING\n
+                        if(stream.prefix(3)=="<<"+ch){
+                                var p=stream.pos;
+                                stream.eatWhile(/\w/);
+                                var n=stream.current().substr(1);
+                                if(n&&stream.eat(ch))
+                                        return tokenSOMETHING(stream,state,n);
+                                stream.pos=p;}
+                        return tokenChain(stream,state,[ch],"string");}
+                if(ch=="q"){
+                        var c=stream.look(-2);
+                        if(!(c&&/\w/.test(c))){
+                                c=stream.look(0);
+                                if(c=="x"){
+                                        c=stream.look(1);
+                                        if(c=="("){
+                                                stream.eatSuffix(2);
+                                                return tokenChain(stream,state,[")"],RXstyle,RXmodifiers);}
+                                        if(c=="["){
+                                                stream.eatSuffix(2);
+                                                return tokenChain(stream,state,["]"],RXstyle,RXmodifiers);}
+                                        if(c=="{"){
+                                                stream.eatSuffix(2);
+                                                return tokenChain(stream,state,["}"],RXstyle,RXmodifiers);}
+                                        if(c=="<"){
+                                                stream.eatSuffix(2);
+                                                return tokenChain(stream,state,[">"],RXstyle,RXmodifiers);}
+                                        if(/[\^'"!~\/]/.test(c)){
+                                                stream.eatSuffix(1);
+                                                return tokenChain(stream,state,[stream.eat(c)],RXstyle,RXmodifiers);}}
+                                else if(c=="q"){
+                                        c=stream.look(1);
+                                        if(c=="("){
+                                                stream.eatSuffix(2);
+                                                return tokenChain(stream,state,[")"],"string");}
+                                        if(c=="["){
+                                                stream.eatSuffix(2);
+                                                return tokenChain(stream,state,["]"],"string");}
+                                        if(c=="{"){
+stream.eatSuffix(2);
+                                                return tokenChain(stream,state,["}"],"string");}
+                                        if(c=="<"){
+                                                stream.eatSuffix(2);
+                                                return tokenChain(stream,state,[">"],"string");}
+                                        if(/[\^'"!~\/]/.test(c)){
+                                                stream.eatSuffix(1);
+                                                return tokenChain(stream,state,[stream.eat(c)],"string");}}
+                                else if(c=="w"){
+                                        c=stream.look(1);
+                                        if(c=="("){
+                                                stream.eatSuffix(2);
+                                                return tokenChain(stream,state,[")"],"bracket");}
+                                        if(c=="["){
+                                                stream.eatSuffix(2);
+                                                return tokenChain(stream,state,["]"],"bracket");}
+                                        if(c=="{"){
+                                                stream.eatSuffix(2);
+                                                return tokenChain(stream,state,["}"],"bracket");}
+                                        if(c=="<"){
+                                                stream.eatSuffix(2);
+                                                return tokenChain(stream,state,[">"],"bracket");}
+                                        if(/[\^'"!~\/]/.test(c)){
+                                                stream.eatSuffix(1);
+                                                return tokenChain(stream,state,[stream.eat(c)],"bracket");}}
+                                else if(c=="r"){
+                                        c=stream.look(1);
+                                        if(c=="("){
+                                                stream.eatSuffix(2);
+                                                return tokenChain(stream,state,[")"],RXstyle,RXmodifiers);}
+                                        if(c=="["){
+                                                stream.eatSuffix(2);
+                                                return tokenChain(stream,state,["]"],RXstyle,RXmodifiers);}
+                                        if(c=="{"){
+                                                stream.eatSuffix(2);
+                                                return tokenChain(stream,state,["}"],RXstyle,RXmodifiers);}
+                                        if(c=="<"){
+                                                stream.eatSuffix(2);
+                                                return tokenChain(stream,state,[">"],RXstyle,RXmodifiers);}
+                                        if(/[\^'"!~\/]/.test(c)){
+                                                stream.eatSuffix(1);
+                                                return tokenChain(stream,state,[stream.eat(c)],RXstyle,RXmodifiers);}}
+                                else if(/[\^'"!~\/(\[{<]/.test(c)){
+                                        if(c=="("){
+                                                stream.eatSuffix(1);
+                                                return tokenChain(stream,state,[")"],"string");}
+                                        if(c=="["){
+                                                stream.eatSuffix(1);
+                                                return tokenChain(stream,state,["]"],"string");}
+                                        if(c=="{"){
+                                                stream.eatSuffix(1);
+                                                return tokenChain(stream,state,["}"],"string");}
+                                        if(c=="<"){
+                                                stream.eatSuffix(1);
+                                                return tokenChain(stream,state,[">"],"string");}
+                                        if(/[\^'"!~\/]/.test(c)){
+                                                return tokenChain(stream,state,[stream.eat(c)],"string");}}}}
+                if(ch=="m"){
+                        var c=stream.look(-2);
+                        if(!(c&&/\w/.test(c))){
+                                c=stream.eat(/[(\[{<\^'"!~\/]/);
+                                if(c){
+                                        if(/[\^'"!~\/]/.test(c)){
+                                                return tokenChain(stream,state,[c],RXstyle,RXmodifiers);}
+                                        if(c=="("){
+                                                return tokenChain(stream,state,[")"],RXstyle,RXmodifiers);}
+                                        if(c=="["){
+                                                return tokenChain(stream,state,["]"],RXstyle,RXmodifiers);}
+                                        if(c=="{"){
+                                                return tokenChain(stream,state,["}"],RXstyle,RXmodifiers);}
+                                        if(c=="<"){
+                                                return tokenChain(stream,state,[">"],RXstyle,RXmodifiers);}}}}
+                if(ch=="s"){
+                        var c=/[\/>\]})\w]/.test(stream.look(-2));
+                        if(!c){
+                                c=stream.eat(/[(\[{<\^'"!~\/]/);
+                                if(c){
+                                        if(c=="[")
+                                                return tokenChain(stream,state,["]","]"],RXstyle,RXmodifiers);
+                                        if(c=="{")
+                                                return tokenChain(stream,state,["}","}"],RXstyle,RXmodifiers);
+                                        if(c=="<")
+                                                return tokenChain(stream,state,[">",">"],RXstyle,RXmodifiers);
+                                        if(c=="(")
+                                                return tokenChain(stream,state,[")",")"],RXstyle,RXmodifiers);
+                                        return tokenChain(stream,state,[c,c],RXstyle,RXmodifiers);}}}
+                if(ch=="y"){
+                        var c=/[\/>\]})\w]/.test(stream.look(-2));
+                        if(!c){
+                                c=stream.eat(/[(\[{<\^'"!~\/]/);
+                                if(c){
+                                        if(c=="[")
+                                                return tokenChain(stream,state,["]","]"],RXstyle,RXmodifiers);
+                                        if(c=="{")
+                                                return tokenChain(stream,state,["}","}"],RXstyle,RXmodifiers);
+                                        if(c=="<")
+                                                return tokenChain(stream,state,[">",">"],RXstyle,RXmodifiers);
+                                        if(c=="(")
+                                                return tokenChain(stream,state,[")",")"],RXstyle,RXmodifiers);
+                                        return tokenChain(stream,state,[c,c],RXstyle,RXmodifiers);}}}
+                if(ch=="t"){
+                        var c=/[\/>\]})\w]/.test(stream.look(-2));
+                        if(!c){
+                                c=stream.eat("r");if(c){
+                                c=stream.eat(/[(\[{<\^'"!~\/]/);
+                                if(c){
+                                        if(c=="[")
+                                                return tokenChain(stream,state,["]","]"],RXstyle,RXmodifiers);
+                                        if(c=="{")
+                                                return tokenChain(stream,state,["}","}"],RXstyle,RXmodifiers);
+                                        if(c=="<")
+                                                return tokenChain(stream,state,[">",">"],RXstyle,RXmodifiers);
+                                        if(c=="(")
+                                                return tokenChain(stream,state,[")",")"],RXstyle,RXmodifiers);
+                                        return tokenChain(stream,state,[c,c],RXstyle,RXmodifiers);}}}}
+                if(ch=="`"){
+                        return tokenChain(stream,state,[ch],"variable-2");}
+                if(ch=="/"){
+                        if(!/~\s*$/.test(stream.prefix()))
+                                return "operator";
+                        else
+                                return tokenChain(stream,state,[ch],RXstyle,RXmodifiers);}
+                if(ch=="$"){
+                        var p=stream.pos;
+                        if(stream.eatWhile(/\d/)||stream.eat("{")&&stream.eatWhile(/\d/)&&stream.eat("}"))
+                                return "variable-2";
+                        else
+                                stream.pos=p;}
+                if(/[$@%]/.test(ch)){
+                        var p=stream.pos;
+                        if(stream.eat("^")&&stream.eat(/[A-Z]/)||!/[@$%&]/.test(stream.look(-2))&&stream.eat(/[=|\\\-#?@;:&`~\^!\[\]*'"$+.,\/<>()]/)){
+                                var c=stream.current();
+                                if(PERL[c])
+                                        return "variable-2";}
+                        stream.pos=p;}
+                if(/[$@%&]/.test(ch)){
+                        if(stream.eatWhile(/[\w$\[\]]/)||stream.eat("{")&&stream.eatWhile(/[\w$\[\]]/)&&stream.eat("}")){
+                                var c=stream.current();
+                                if(PERL[c])
+                                        return "variable-2";
+                                else
+                                        return "variable";}}
+                if(ch=="#"){
+                        if(stream.look(-2)!="$"){
+                                stream.skipToEnd();
+                                return "comment";}}
+                if(/[:+\-\^*$&%@=<>!?|\/~\.]/.test(ch)){
+                        var p=stream.pos;
+                        stream.eatWhile(/[:+\-\^*$&%@=<>!?|\/~\.]/);
+                        if(PERL[stream.current()])
+                                return "operator";
+                        else
+                                stream.pos=p;}
+                if(ch=="_"){
+                        if(stream.pos==1){
+                                if(stream.suffix(6)=="_END__"){
+                                        return tokenChain(stream,state,['\0'],"comment");}
+                                else if(stream.suffix(7)=="_DATA__"){
+                                        return tokenChain(stream,state,['\0'],"variable-2");}
+                                else if(stream.suffix(7)=="_C__"){
+                                        return tokenChain(stream,state,['\0'],"string");}}}
+                if(/\w/.test(ch)){
+                        var p=stream.pos;
+                        if(stream.look(-2)=="{"&&(stream.look(0)=="}"||stream.eatWhile(/\w/)&&stream.look(0)=="}"))
+                                return "string";
+                        else
+                                stream.pos=p;}
+                if(/[A-Z]/.test(ch)){
+                        var l=stream.look(-2);
+                        var p=stream.pos;
+                        stream.eatWhile(/[A-Z_]/);
+                        if(/[\da-z]/.test(stream.look(0))){
+                                stream.pos=p;}
+                        else{
+                                var c=PERL[stream.current()];
+                                if(!c)
+                                        return "meta";
+                                if(c[1])
+                                        c=c[0];
+                                if(l!=":"){
+                                        if(c==1)
+                                                return "keyword";
+                                        else if(c==2)
+                                                return "def";
+                                        else if(c==3)
+                                                return "atom";
+                                        else if(c==4)
+                                                return "operator";
+                                        else if(c==5)
+                                                return "variable-2";
+                                        else
+                                                return "meta";}
+                                else
+                                        return "meta";}}
+                if(/[a-zA-Z_]/.test(ch)){
+                        var l=stream.look(-2);
+                        stream.eatWhile(/\w/);
+                        var c=PERL[stream.current()];
+                        if(!c)
+                                return "meta";
+                        if(c[1])
+                                c=c[0];
+                        if(l!=":"){
+                                if(c==1)
+                                        return "keyword";
+                                else if(c==2)
+                                        return "def";
+                                else if(c==3)
+                                        return "atom";
+                                else if(c==4)
+                                        return "operator";
+                                else if(c==5)
+                                        return "variable-2";
+                                else
+                                        return "meta";}
+                        else
+                                return "meta";}
+                return null;}
+
+        return{
+                startState:function(){
+                        return{
+                                tokenize:tokenPerl,
+                                chain:null,
+                                style:null,
+                                tail:null};},
+                token:function(stream,state){
+                        return (state.tokenize||tokenPerl)(stream,state);},
+                electricChars:"{}"};});
+
+CodeMirror.defineMIME("text/x-perl", "perl");
+
+// it's like "peek", but need for look-ahead or look-behind if index < 0
+CodeMirror.StringStream.prototype.look=function(c){
+        return this.string.charAt(this.pos+(c||0));};
+
+// return a part of prefix of current stream from current position
+CodeMirror.StringStream.prototype.prefix=function(c){
+        if(c){
+                var x=this.pos-c;
+                return this.string.substr((x>=0?x:0),c);}
+        else{
+                return this.string.substr(0,this.pos-1);}};
+
+// return a part of suffix of current stream from current position
+CodeMirror.StringStream.prototype.suffix=function(c){
+        var y=this.string.length;
+        var x=y-this.pos+1;
+        return this.string.substr(this.pos,(c&&c<y?c:x));};
+
+// return a part of suffix of current stream from current position and change current position
+CodeMirror.StringStream.prototype.nsuffix=function(c){
+        var p=this.pos;
+        var l=c||(this.string.length-this.pos+1);
+        this.pos+=l;
+        return this.string.substr(p,l);};
+
+// eating and vomiting a part of stream from current position
+CodeMirror.StringStream.prototype.eatSuffix=function(c){
+        var x=this.pos+c;
+        var y;
+        if(x<=0)
+                this.pos=0;
+        else if(x>=(y=this.string.length-1))
+                this.pos=y;
+        else
+                this.pos=x;};
+;CodeMirror.defineMode("python", function(conf, parserConf) {
+    var ERRORCLASS = 'error';
+
+    function wordRegexp(words) {
+        return new RegExp("^((" + words.join(")|(") + "))\\b");
+    }
+
+    var singleOperators = parserConf.singleOperators || new RegExp("^[\\+\\-\\*/%&|\\^~<>!]");
+    var singleDelimiters = parserConf.singleDelimiters || new RegExp('^[\\(\\)\\[\\]\\{\\}@,:`=;\\.]');
+    var doubleOperators = parserConf.doubleOperators || new RegExp("^((==)|(!=)|(<=)|(>=)|(<>)|(<<)|(>>)|(//)|(\\*\\*))");
+    var doubleDelimiters = parserConf.doubleDelimiters || new RegExp("^((\\+=)|(\\-=)|(\\*=)|(%=)|(/=)|(&=)|(\\|=)|(\\^=))");
+    var tripleDelimiters = parserConf.tripleDelimiters || new RegExp("^((//=)|(>>=)|(<<=)|(\\*\\*=))");
+    var identifiers = parserConf.identifiers|| new RegExp("^[_A-Za-z][_A-Za-z0-9]*");
+    var hangingIndent = parserConf.hangingIndent || parserConf.indentUnit;
+
+    var wordOperators = wordRegexp(['and', 'or', 'not', 'is', 'in']);
+    var commonkeywords = ['as', 'assert', 'break', 'class', 'continue',
+                          'def', 'del', 'elif', 'else', 'except', 'finally',
+                          'for', 'from', 'global', 'if', 'import',
+                          'lambda', 'pass', 'raise', 'return',
+                          'try', 'while', 'with', 'yield'];
+    var commonBuiltins = ['abs', 'all', 'any', 'bin', 'bool', 'bytearray', 'callable', 'chr',
+                          'classmethod', 'compile', 'complex', 'delattr', 'dict', 'dir', 'divmod',
+                          'enumerate', 'eval', 'filter', 'float', 'format', 'frozenset',
+                          'getattr', 'globals', 'hasattr', 'hash', 'help', 'hex', 'id',
+                          'input', 'int', 'isinstance', 'issubclass', 'iter', 'len',
+                          'list', 'locals', 'map', 'max', 'memoryview', 'min', 'next',
+                          'object', 'oct', 'open', 'ord', 'pow', 'property', 'range',
+                          'repr', 'reversed', 'round', 'set', 'setattr', 'slice',
+                          'sorted', 'staticmethod', 'str', 'sum', 'super', 'tuple',
+                          'type', 'vars', 'zip', '__import__', 'NotImplemented',
+                          'Ellipsis', '__debug__'];
+    var py2 = {'builtins': ['apply', 'basestring', 'buffer', 'cmp', 'coerce', 'execfile',
+                            'file', 'intern', 'long', 'raw_input', 'reduce', 'reload',
+                            'unichr', 'unicode', 'xrange', 'False', 'True', 'None'],
+               'keywords': ['exec', 'print']};
+    var py3 = {'builtins': ['ascii', 'bytes', 'exec', 'print'],
+               'keywords': ['nonlocal', 'False', 'True', 'None']};
+
+    if(parserConf.extra_keywords != undefined){
+        commonkeywords = commonkeywords.concat(parserConf.extra_keywords);
+    }
+    if(parserConf.extra_builtins != undefined){
+        commonBuiltins = commonBuiltins.concat(parserConf.extra_builtins);
+    }
+    if (!!parserConf.version && parseInt(parserConf.version, 10) === 3) {
+        commonkeywords = commonkeywords.concat(py3.keywords);
+        commonBuiltins = commonBuiltins.concat(py3.builtins);
+        var stringPrefixes = new RegExp("^(([rb]|(br))?('{3}|\"{3}|['\"]))", "i");
+    } else {
+        commonkeywords = commonkeywords.concat(py2.keywords);
+        commonBuiltins = commonBuiltins.concat(py2.builtins);
+        var stringPrefixes = new RegExp("^(([rub]|(ur)|(br))?('{3}|\"{3}|['\"]))", "i");
+    }
+    var keywords = wordRegexp(commonkeywords);
+    var builtins = wordRegexp(commonBuiltins);
+
+    var indentInfo = null;
+
+    // tokenizers
+    function tokenBase(stream, state) {
+        // Handle scope changes
+        if (stream.sol()) {
+            var scopeOffset = state.scopes[0].offset;
+            if (stream.eatSpace()) {
+                var lineOffset = stream.indentation();
+                if (lineOffset > scopeOffset) {
+                    indentInfo = 'indent';
+                } else if (lineOffset < scopeOffset) {
+                    indentInfo = 'dedent';
+                }
+                return null;
+            } else {
+                if (scopeOffset > 0) {
+                    dedent(stream, state);
+                }
+            }
+        }
+        if (stream.eatSpace()) {
+            return null;
+        }
+
+        var ch = stream.peek();
+
+        // Handle Comments
+        if (ch === '#') {
+            stream.skipToEnd();
+            return 'comment';
+        }
+
+        // Handle Number Literals
+        if (stream.match(/^[0-9\.]/, false)) {
+            var floatLiteral = false;
+            // Floats
+            if (stream.match(/^\d*\.\d+(e[\+\-]?\d+)?/i)) { floatLiteral = true; }
+            if (stream.match(/^\d+\.\d*/)) { floatLiteral = true; }
+            if (stream.match(/^\.\d+/)) { floatLiteral = true; }
+            if (floatLiteral) {
+                // Float literals may be "imaginary"
+                stream.eat(/J/i);
+                return 'number';
+            }
+            // Integers
+            var intLiteral = false;
+            // Hex
+            if (stream.match(/^0x[0-9a-f]+/i)) { intLiteral = true; }
+            // Binary
+            if (stream.match(/^0b[01]+/i)) { intLiteral = true; }
+            // Octal
+            if (stream.match(/^0o[0-7]+/i)) { intLiteral = true; }
+            // Decimal
+            if (stream.match(/^[1-9]\d*(e[\+\-]?\d+)?/)) {
+                // Decimal literals may be "imaginary"
+                stream.eat(/J/i);
+                // TODO - Can you have imaginary longs?
+                intLiteral = true;
+            }
+            // Zero by itself with no other piece of number.
+            if (stream.match(/^0(?![\dx])/i)) { intLiteral = true; }
+            if (intLiteral) {
+                // Integer literals may be "long"
+                stream.eat(/L/i);
+                return 'number';
+            }
+        }
+
+        // Handle Strings
+        if (stream.match(stringPrefixes)) {
+            state.tokenize = tokenStringFactory(stream.current());
+            return state.tokenize(stream, state);
+        }
+
+        // Handle operators and Delimiters
+        if (stream.match(tripleDelimiters) || stream.match(doubleDelimiters)) {
+            return null;
+        }
+        if (stream.match(doubleOperators)
+            || stream.match(singleOperators)
+            || stream.match(wordOperators)) {
+            return 'operator';
+        }
+        if (stream.match(singleDelimiters)) {
+            return null;
+        }
+
+        if (stream.match(keywords)) {
+            return 'keyword';
+        }
+
+        if (stream.match(builtins)) {
+            return 'builtin';
+        }
+
+        if (stream.match(identifiers)) {
+            if (state.lastToken == 'def' || state.lastToken == 'class') {
+                return 'def';
+            }
+            return 'variable';
+        }
+
+        // Handle non-detected items
+        stream.next();
+        return ERRORCLASS;
+    }
+
+    function tokenStringFactory(delimiter) {
+        while ('rub'.indexOf(delimiter.charAt(0).toLowerCase()) >= 0) {
+            delimiter = delimiter.substr(1);
+        }
+        var singleline = delimiter.length == 1;
+        var OUTCLASS = 'string';
+
+        function tokenString(stream, state) {
+            while (!stream.eol()) {
+                stream.eatWhile(/[^'"\\]/);
+                if (stream.eat('\\')) {
+                    stream.next();
+                    if (singleline && stream.eol()) {
+                        return OUTCLASS;
+                    }
+                } else if (stream.match(delimiter)) {
+                    state.tokenize = tokenBase;
+                    return OUTCLASS;
+                } else {
+                    stream.eat(/['"]/);
+                }
+            }
+            if (singleline) {
+                if (parserConf.singleLineStringErrors) {
+                    return ERRORCLASS;
+                } else {
+                    state.tokenize = tokenBase;
+                }
+            }
+            return OUTCLASS;
+        }
+        tokenString.isString = true;
+        return tokenString;
+    }
+
+    function indent(stream, state, type) {
+        type = type || 'py';
+        var indentUnit = 0;
+        if (type === 'py') {
+            if (state.scopes[0].type !== 'py') {
+                state.scopes[0].offset = stream.indentation();
+                return;
+            }
+            for (var i = 0; i < state.scopes.length; ++i) {
+                if (state.scopes[i].type === 'py') {
+                    indentUnit = state.scopes[i].offset + conf.indentUnit;
+                    break;
+                }
+            }
+        } else if (stream.match(/\s*($|#)/, false)) {
+            // An open paren/bracket/brace with only space or comments after it
+            // on the line will indent the next line a fixed amount, to make it
+            // easier to put arguments, list items, etc. on their own lines.
+            indentUnit = stream.indentation() + hangingIndent;
+        } else {
+            indentUnit = stream.column() + stream.current().length;
+        }
+        state.scopes.unshift({
+            offset: indentUnit,
+            type: type
+        });
+    }
+
+    function dedent(stream, state, type) {
+        type = type || 'py';
+        if (state.scopes.length == 1) return;
+        if (state.scopes[0].type === 'py') {
+            var _indent = stream.indentation();
+            var _indent_index = -1;
+            for (var i = 0; i < state.scopes.length; ++i) {
+                if (_indent === state.scopes[i].offset) {
+                    _indent_index = i;
+                    break;
+                }
+            }
+            if (_indent_index === -1) {
+                return true;
+            }
+            while (state.scopes[0].offset !== _indent) {
+                state.scopes.shift();
+            }
+            return false;
+        } else {
+            if (type === 'py') {
+                state.scopes[0].offset = stream.indentation();
+                return false;
+            } else {
+                if (state.scopes[0].type != type) {
+                    return true;
+                }
+                state.scopes.shift();
+                return false;
+            }
+        }
+    }
+
+    function tokenLexer(stream, state) {
+        indentInfo = null;
+        var style = state.tokenize(stream, state);
+        var current = stream.current();
+
+        // Handle '.' connected identifiers
+        if (current === '.') {
+            style = stream.match(identifiers, false) ? null : ERRORCLASS;
+            if (style === null && state.lastStyle === 'meta') {
+                // Apply 'meta' style to '.' connected identifiers when
+                // appropriate.
+                style = 'meta';
+            }
+            return style;
+        }
+
+        // Handle decorators
+        if (current === '@') {
+            return stream.match(identifiers, false) ? 'meta' : ERRORCLASS;
+        }
+
+        if ((style === 'variable' || style === 'builtin')
+            && state.lastStyle === 'meta') {
+            style = 'meta';
+        }
+
+        // Handle scope changes.
+        if (current === 'pass' || current === 'return') {
+            state.dedent += 1;
+        }
+        if (current === 'lambda') state.lambda = true;
+        if ((current === ':' && !state.lambda && state.scopes[0].type == 'py')
+            || indentInfo === 'indent') {
+            indent(stream, state);
+        }
+        var delimiter_index = '[({'.indexOf(current);
+        if (delimiter_index !== -1) {
+            indent(stream, state, '])}'.slice(delimiter_index, delimiter_index+1));
+        }
+        if (indentInfo === 'dedent') {
+            if (dedent(stream, state)) {
+                return ERRORCLASS;
+            }
+        }
+        delimiter_index = '])}'.indexOf(current);
+        if (delimiter_index !== -1) {
+            if (dedent(stream, state, current)) {
+                return ERRORCLASS;
+            }
+        }
+        if (state.dedent > 0 && stream.eol() && state.scopes[0].type == 'py') {
+            if (state.scopes.length > 1) state.scopes.shift();
+            state.dedent -= 1;
+        }
+
+        return style;
+    }
+
+    var external = {
+        startState: function(basecolumn) {
+            return {
+              tokenize: tokenBase,
+              scopes: [{offset:basecolumn || 0, type:'py'}],
+              lastStyle: null,
+              lastToken: null,
+              lambda: false,
+              dedent: 0
+          };
+        },
+
+        token: function(stream, state) {
+            var style = tokenLexer(stream, state);
+
+            state.lastStyle = style;
+
+            var current = stream.current();
+            if (current && style) {
+                state.lastToken = current;
+            }
+
+            if (stream.eol() && state.lambda) {
+                state.lambda = false;
+            }
+            return style;
+        },
+
+        indent: function(state) {
+            if (state.tokenize != tokenBase) {
+                return state.tokenize.isString ? CodeMirror.Pass : 0;
+            }
+
+            return state.scopes[0].offset;
+        },
+
+        lineComment: "#",
+        fold: "indent"
+    };
+    return external;
+});
+
+CodeMirror.defineMIME("text/x-python", "python");
+
+(function() {
+  "use strict";
+  var words = function(str){return str.split(' ');};
+
+  CodeMirror.defineMIME("text/x-cython", {
+    name: "python",
+    extra_keywords: words("by cdef cimport cpdef ctypedef enum except"+
+                          "extern gil include nogil property public"+
+                          "readonly struct union DEF IF ELIF ELSE")
+  });
+})();
 ;CodeMirror.defineMode("ruby", function(config) {
   function wordObj(words) {
     var o = {};
@@ -30303,7 +31874,7 @@ CodeMirror.defineMIME("text/x-coffeescript", "coffeescript");
 
 CodeMirror.defineMIME("text/x-ruby", "ruby");
 
-;// A standalone CommonJS loader.
+;var hljs=new function(){function l(o){return o.replace(/&/gm,"&amp;").replace(/</gm,"&lt;").replace(/>/gm,"&gt;")}function b(p){for(var o=p.firstChild;o;o=o.nextSibling){if(o.nodeName=="CODE"){return o}if(!(o.nodeType==3&&o.nodeValue.match(/\s+/))){break}}}function h(p,o){return Array.prototype.map.call(p.childNodes,function(q){if(q.nodeType==3){return o?q.nodeValue.replace(/\n/g,""):q.nodeValue}if(q.nodeName=="BR"){return"\n"}return h(q,o)}).join("")}function a(q){var p=(q.className+" "+q.parentNode.className).split(/\s+/);p=p.map(function(r){return r.replace(/^language-/,"")});for(var o=0;o<p.length;o++){if(e[p[o]]||p[o]=="no-highlight"){return p[o]}}}function c(q){var o=[];(function p(r,s){for(var t=r.firstChild;t;t=t.nextSibling){if(t.nodeType==3){s+=t.nodeValue.length}else{if(t.nodeName=="BR"){s+=1}else{if(t.nodeType==1){o.push({event:"start",offset:s,node:t});s=p(t,s);o.push({event:"stop",offset:s,node:t})}}}}return s})(q,0);return o}function j(x,v,w){var p=0;var y="";var r=[];function t(){if(x.length&&v.length){if(x[0].offset!=v[0].offset){return(x[0].offset<v[0].offset)?x:v}else{return v[0].event=="start"?x:v}}else{return x.length?x:v}}function s(A){function z(B){return" "+B.nodeName+'="'+l(B.value)+'"'}return"<"+A.nodeName+Array.prototype.map.call(A.attributes,z).join("")+">"}while(x.length||v.length){var u=t().splice(0,1)[0];y+=l(w.substr(p,u.offset-p));p=u.offset;if(u.event=="start"){y+=s(u.node);r.push(u.node)}else{if(u.event=="stop"){var o,q=r.length;do{q--;o=r[q];y+=("</"+o.nodeName.toLowerCase()+">")}while(o!=u.node);r.splice(q,1);while(q<r.length){y+=s(r[q]);q++}}}}return y+l(w.substr(p))}function f(q){function o(s,r){return RegExp(s,"m"+(q.cI?"i":"")+(r?"g":""))}function p(y,w){if(y.compiled){return}y.compiled=true;var s=[];if(y.k){var r={};function z(A,t){t.split(" ").forEach(function(B){var C=B.split("|");r[C[0]]=[A,C[1]?Number(C[1]):1];s.push(C[0])})}y.lR=o(y.l||hljs.IR,true);if(typeof y.k=="string"){z("keyword",y.k)}else{for(var x in y.k){if(!y.k.hasOwnProperty(x)){continue}z(x,y.k[x])}}y.k=r}if(w){if(y.bWK){y.b="\\b("+s.join("|")+")\\s"}y.bR=o(y.b?y.b:"\\B|\\b");if(!y.e&&!y.eW){y.e="\\B|\\b"}if(y.e){y.eR=o(y.e)}y.tE=y.e||"";if(y.eW&&w.tE){y.tE+=(y.e?"|":"")+w.tE}}if(y.i){y.iR=o(y.i)}if(y.r===undefined){y.r=1}if(!y.c){y.c=[]}for(var v=0;v<y.c.length;v++){if(y.c[v]=="self"){y.c[v]=y}p(y.c[v],y)}if(y.starts){p(y.starts,w)}var u=[];for(var v=0;v<y.c.length;v++){u.push(y.c[v].b)}if(y.tE){u.push(y.tE)}if(y.i){u.push(y.i)}y.t=u.length?o(u.join("|"),true):{exec:function(t){return null}}}p(q)}function d(D,E){function o(r,M){for(var L=0;L<M.c.length;L++){var K=M.c[L].bR.exec(r);if(K&&K.index==0){return M.c[L]}}}function s(K,r){if(K.e&&K.eR.test(r)){return K}if(K.eW){return s(K.parent,r)}}function t(r,K){return K.i&&K.iR.test(r)}function y(L,r){var K=F.cI?r[0].toLowerCase():r[0];return L.k.hasOwnProperty(K)&&L.k[K]}function G(){var K=l(w);if(!A.k){return K}var r="";var N=0;A.lR.lastIndex=0;var L=A.lR.exec(K);while(L){r+=K.substr(N,L.index-N);var M=y(A,L);if(M){v+=M[1];r+='<span class="'+M[0]+'">'+L[0]+"</span>"}else{r+=L[0]}N=A.lR.lastIndex;L=A.lR.exec(K)}return r+K.substr(N)}function z(){if(A.sL&&!e[A.sL]){return l(w)}var r=A.sL?d(A.sL,w):g(w);if(A.r>0){v+=r.keyword_count;B+=r.r}return'<span class="'+r.language+'">'+r.value+"</span>"}function J(){return A.sL!==undefined?z():G()}function I(L,r){var K=L.cN?'<span class="'+L.cN+'">':"";if(L.rB){x+=K;w=""}else{if(L.eB){x+=l(r)+K;w=""}else{x+=K;w=r}}A=Object.create(L,{parent:{value:A}});B+=L.r}function C(K,r){w+=K;if(r===undefined){x+=J();return 0}var L=o(r,A);if(L){x+=J();I(L,r);return L.rB?0:r.length}var M=s(A,r);if(M){if(!(M.rE||M.eE)){w+=r}x+=J();do{if(A.cN){x+="</span>"}A=A.parent}while(A!=M.parent);if(M.eE){x+=l(r)}w="";if(M.starts){I(M.starts,"")}return M.rE?0:r.length}if(t(r,A)){throw"Illegal"}w+=r;return r.length||1}var F=e[D];f(F);var A=F;var w="";var B=0;var v=0;var x="";try{var u,q,p=0;while(true){A.t.lastIndex=p;u=A.t.exec(E);if(!u){break}q=C(E.substr(p,u.index-p),u[0]);p=u.index+q}C(E.substr(p));return{r:B,keyword_count:v,value:x,language:D}}catch(H){if(H=="Illegal"){return{r:0,keyword_count:0,value:l(E)}}else{throw H}}}function g(s){var o={keyword_count:0,r:0,value:l(s)};var q=o;for(var p in e){if(!e.hasOwnProperty(p)){continue}var r=d(p,s);r.language=p;if(r.keyword_count+r.r>q.keyword_count+q.r){q=r}if(r.keyword_count+r.r>o.keyword_count+o.r){q=o;o=r}}if(q.language){o.second_best=q}return o}function i(q,p,o){if(p){q=q.replace(/^((<[^>]+>|\t)+)/gm,function(r,v,u,t){return v.replace(/\t/g,p)})}if(o){q=q.replace(/\n/g,"<br>")}return q}function m(r,u,p){var v=h(r,p);var t=a(r);if(t=="no-highlight"){return}var w=t?d(t,v):g(v);t=w.language;var o=c(r);if(o.length){var q=document.createElement("pre");q.innerHTML=w.value;w.value=j(o,c(q),v)}w.value=i(w.value,u,p);var s=r.className;if(!s.match("(\\s|^)(language-)?"+t+"(\\s|$)")){s=s?(s+" "+t):t}r.innerHTML=w.value;r.className=s;r.result={language:t,kw:w.keyword_count,re:w.r};if(w.second_best){r.second_best={language:w.second_best.language,kw:w.second_best.keyword_count,re:w.second_best.r}}}function n(){if(n.called){return}n.called=true;Array.prototype.map.call(document.getElementsByTagName("pre"),b).filter(Boolean).forEach(function(o){m(o,hljs.tabReplace)})}function k(){window.addEventListener("DOMContentLoaded",n,false);window.addEventListener("load",n,false)}var e={};this.LANGUAGES=e;this.highlight=d;this.highlightAuto=g;this.fixMarkup=i;this.highlightBlock=m;this.initHighlighting=n;this.initHighlightingOnLoad=k;this.IR="[a-zA-Z][a-zA-Z0-9_]*";this.UIR="[a-zA-Z_][a-zA-Z0-9_]*";this.NR="\\b\\d+(\\.\\d+)?";this.CNR="(\\b0[xX][a-fA-F0-9]+|(\\b\\d+(\\.\\d*)?|\\.\\d+)([eE][-+]?\\d+)?)";this.BNR="\\b(0b[01]+)";this.RSR="!|!=|!==|%|%=|&|&&|&=|\\*|\\*=|\\+|\\+=|,|\\.|-|-=|/|/=|:|;|<|<<|<<=|<=|=|==|===|>|>=|>>|>>=|>>>|>>>=|\\?|\\[|\\{|\\(|\\^|\\^=|\\||\\|=|\\|\\||~";this.BE={b:"\\\\[\\s\\S]",r:0};this.ASM={cN:"string",b:"'",e:"'",i:"\\n",c:[this.BE],r:0};this.QSM={cN:"string",b:'"',e:'"',i:"\\n",c:[this.BE],r:0};this.CLCM={cN:"comment",b:"//",e:"$"};this.CBLCLM={cN:"comment",b:"/\\*",e:"\\*/"};this.HCM={cN:"comment",b:"#",e:"$"};this.NM={cN:"number",b:this.NR,r:0};this.CNM={cN:"number",b:this.CNR,r:0};this.BNM={cN:"number",b:this.BNR,r:0};this.inherit=function(q,r){var o={};for(var p in q){o[p]=q[p]}if(r){for(var p in r){o[p]=r[p]}}return o}}();hljs.LANGUAGES.javascript=function(a){return{k:{keyword:"in if for while finally var new function do return void else break catch instanceof with throw case default try this switch continue typeof delete let yield const",literal:"true false null undefined NaN Infinity"},c:[a.ASM,a.QSM,a.CLCM,a.CBLCLM,a.CNM,{b:"("+a.RSR+"|\\b(case|return|throw)\\b)\\s*",k:"return throw case",c:[a.CLCM,a.CBLCLM,{cN:"regexp",b:"/",e:"/[gim]*",i:"\\n",c:[{b:"\\\\/"}]},{b:"<",e:">;",sL:"xml"}],r:0},{cN:"function",bWK:true,e:"{",k:"function",c:[{cN:"title",b:"[A-Za-z$_][0-9A-Za-z$_]*"},{cN:"params",b:"\\(",e:"\\)",c:[a.CLCM,a.CBLCLM],i:"[\"'\\(]"}],i:"\\[|%"}]}}(hljs);hljs.LANGUAGES.json=function(a){var e={literal:"true false null"};var d=[a.QSM,a.CNM];var c={cN:"value",e:",",eW:true,eE:true,c:d,k:e};var b={b:"{",e:"}",c:[{cN:"attribute",b:'\\s*"',e:'"\\s*:\\s*',eB:true,eE:true,c:[a.BE],i:"\\n",starts:c}],i:"\\S"};var f={b:"\\[",e:"\\]",c:[a.inherit(c,{cN:null})],i:"\\S"};d.splice(d.length,0,b,f);return{c:d,k:e,i:"\\S"}}(hljs);;// A standalone CommonJS loader.
 (function(root) {
   /**
    * Require the given path.
@@ -30603,6 +32174,22 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
             } else {
               return opts.fn(this);
             }
+          },
+          isRunning: function(opts) {
+            var status;
+            if ((status = job.attr('status')) && status === 'running') {
+              return opts.fn(this);
+            } else {
+              return opts.inverse(this);
+            }
+          },
+          format: function(line) {
+            var obj;
+            try {
+              obj = JSON.parse(line);
+              line = hljs.highlight('javascript', JSON.stringify(obj, null, 2)).value;
+            } catch (_error) {}
+            return "<pre>" + line + "</pre>";
           }
         }
       });
@@ -30699,8 +32286,9 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
             var b;
             expanded(b = !expanded());
             if (b) {
-              return this.element.find('.search .input').focus();
+              this.element.find('.search .input').focus();
             }
+            return false;
           },
           '.search .input keyup': function(el, evt) {
             switch (evt.which) {
@@ -31001,7 +32589,7 @@ CodeMirror.defineMIME("text/x-ruby", "ruby");
     // results.mustache
     root.require.register('runnable/client/templates/results.js', function(exports, require, module) {
     
-      module.exports = ["<article id=\"results\">","    {{ #isEmpty }}","    <div class=\"warning\">","        <h2>Your script has finished</h2>","        <span class=\"icon attention\"></span>","        <p>No data were logged into the terminal.</p>","    </div>","    {{ /isEmpty }}","","    {{ #job.out }}","        {{ #if stdout.length }}","            <div class=\"stdout\">","                <h2>Terminal output</h2>","            {{ #each stdout }}","                <pre>{{ . }}</pre>","            {{ /each }}","            </div>","        {{ /if }}","","        {{ #if stderr.length }}","            <div class=\"stderr\">","                <h2>Errors found</h2>","                <span class=\"icon attention\"></span>","            {{ #each stderr }}","                <pre>{{ . }}</pre>","            {{ /each }}","            </div>","        {{ /if }}","    {{ /job.out }}","</article>"].join("\n");
+      module.exports = ["<article id=\"results\">","    {{ #isRunning }}","    <div class=\"notify\">","        <h2>Your script is running</h2>","        <span class=\"icon help\"></span>","    </div>    ","    {{ /isRunning }}","","    {{ #isEmpty }}","    <div class=\"warning\">","        <h2>Your script has finished</h2>","        <span class=\"icon attention\"></span>","        <p>No data were logged into the terminal.</p>","    </div>","    {{ /isEmpty }}","","    {{ #job.out }}","        {{ #if stdout.length }}","            <div class=\"stdout\">","                <h2>Terminal output</h2>","            {{ #each stdout }}","                <div class=\"line\">{{{ format . }}}</div>","            {{ /each }}","            </div>","        {{ /if }}","","        {{ #if stderr.length }}","            <div class=\"stderr\">","                <h2>Errors found</h2>","                <span class=\"icon attention\"></span>","            {{ #each stderr }}","                <pre>{{ . }}</pre>","            {{ /each }}","            </div>","        {{ /if }}","    {{ /job.out }}","</article>"].join("\n");
     });
 
     // select.mustache

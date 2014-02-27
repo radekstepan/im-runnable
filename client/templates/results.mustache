@@ -1,4 +1,11 @@
 <article id="results">
+    {{ #isRunning }}
+    <div class="notify">
+        <h2>Your script is running</h2>
+        <span class="icon help"></span>
+    </div>    
+    {{ /isRunning }}
+
     {{ #isEmpty }}
     <div class="warning">
         <h2>Your script has finished</h2>
@@ -12,7 +19,7 @@
             <div class="stdout">
                 <h2>Terminal output</h2>
             {{ #each stdout }}
-                <pre>{{ . }}</pre>
+                <div class="line">{{{ format . }}}</div>
             {{ /each }}
             </div>
         {{ /if }}

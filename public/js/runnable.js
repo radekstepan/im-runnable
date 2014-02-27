@@ -298,6 +298,22 @@
             } else {
               return opts.fn(this);
             }
+          },
+          isRunning: function(opts) {
+            var status;
+            if ((status = job.attr('status')) && status === 'running') {
+              return opts.fn(this);
+            } else {
+              return opts.inverse(this);
+            }
+          },
+          format: function(line) {
+            var obj;
+            try {
+              obj = JSON.parse(line);
+              line = hljs.highlight('javascript', JSON.stringify(obj, null, 2)).value;
+            } catch (_error) {}
+            return "<pre>" + line + "</pre>";
           }
         }
       });
@@ -394,8 +410,9 @@
             var b;
             expanded(b = !expanded());
             if (b) {
-              return this.element.find('.search .input').focus();
+              this.element.find('.search .input').focus();
             }
+            return false;
           },
           '.search .input keyup': function(el, evt) {
             switch (evt.which) {
@@ -696,7 +713,7 @@
     // results.mustache
     root.require.register('runnable/client/templates/results.js', function(exports, require, module) {
     
-      module.exports = ["<article id=\"results\">","    {{ #isEmpty }}","    <div class=\"warning\">","        <h2>Your script has finished</h2>","        <span class=\"icon attention\"></span>","        <p>No data were logged into the terminal.</p>","    </div>","    {{ /isEmpty }}","","    {{ #job.out }}","        {{ #if stdout.length }}","            <div class=\"stdout\">","                <h2>Terminal output</h2>","            {{ #each stdout }}","                <pre>{{ . }}</pre>","            {{ /each }}","            </div>","        {{ /if }}","","        {{ #if stderr.length }}","            <div class=\"stderr\">","                <h2>Errors found</h2>","                <span class=\"icon attention\"></span>","            {{ #each stderr }}","                <pre>{{ . }}</pre>","            {{ /each }}","            </div>","        {{ /if }}","    {{ /job.out }}","</article>"].join("\n");
+      module.exports = ["<article id=\"results\">","    {{ #isRunning }}","    <div class=\"notify\">","        <h2>Your script is running</h2>","        <span class=\"icon help\"></span>","    </div>    ","    {{ /isRunning }}","","    {{ #isEmpty }}","    <div class=\"warning\">","        <h2>Your script has finished</h2>","        <span class=\"icon attention\"></span>","        <p>No data were logged into the terminal.</p>","    </div>","    {{ /isEmpty }}","","    {{ #job.out }}","        {{ #if stdout.length }}","            <div class=\"stdout\">","                <h2>Terminal output</h2>","            {{ #each stdout }}","                <div class=\"line\">{{{ format . }}}</div>","            {{ /each }}","            </div>","        {{ /if }}","","        {{ #if stderr.length }}","            <div class=\"stderr\">","                <h2>Errors found</h2>","                <span class=\"icon attention\"></span>","            {{ #each stderr }}","                <pre>{{ . }}</pre>","            {{ /each }}","            </div>","        {{ /if }}","    {{ /job.out }}","</article>"].join("\n");
     });
 
     // select.mustache

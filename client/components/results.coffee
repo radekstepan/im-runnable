@@ -17,3 +17,21 @@ module.exports = can.Component.extend
                 opts.inverse(@)
             else
                 opts.fn(@)
+
+        # Is the script running atmo?
+        isRunning: (opts) ->
+            if (status = job.attr('status')) and status is 'running'
+                opts.fn(@)
+            else
+                opts.inverse(@)
+
+        # Format a line from a terminal.
+        format: (line) ->
+            # JSON?
+            try
+                obj = JSON.parse line
+                # Will be syntax highlighted.
+                line = hljs.highlight('javascript', JSON.stringify(obj, null, 2)).value
+
+            # Just standard log.
+            "<pre>#{line}</pre>"

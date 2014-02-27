@@ -5193,6 +5193,134 @@ div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #f22;}
   }
 }
 
+/*
+
+github.com style (c) Vasily Polovnyov <vast@whiteants.net>
+
+*/
+
+pre code {
+  display: block; padding: 0.5em;
+  color: #333;
+  background: #f8f8ff
+}
+
+pre .comment,
+pre .template_comment,
+pre .diff .header,
+pre .javadoc {
+  color: #998;
+  font-style: italic
+}
+
+pre .keyword,
+pre .css .rule .keyword,
+pre .winutils,
+pre .javascript .title,
+pre .nginx .title,
+pre .subst,
+pre .request,
+pre .status {
+  color: #333;
+  font-weight: bold
+}
+
+pre .number,
+pre .hexcolor,
+pre .ruby .constant {
+  color: #099;
+}
+
+pre .string,
+pre .tag .value,
+pre .phpdoc,
+pre .tex .formula {
+  color: #d14
+}
+
+pre .title,
+pre .id {
+  color: #900;
+  font-weight: bold
+}
+
+pre .javascript .title,
+pre .lisp .title,
+pre .clojure .title,
+pre .subst {
+  font-weight: normal
+}
+
+pre .class .title,
+pre .haskell .type,
+pre .vhdl .literal,
+pre .tex .command {
+  color: #458;
+  font-weight: bold
+}
+
+pre .tag,
+pre .tag .title,
+pre .rules .property,
+pre .django .tag .keyword {
+  color: #000080;
+  font-weight: normal
+}
+
+pre .attribute,
+pre .variable,
+pre .lisp .body {
+  color: #008080
+}
+
+pre .regexp {
+  color: #009926
+}
+
+pre .class {
+  color: #458;
+  font-weight: bold
+}
+
+pre .symbol,
+pre .ruby .symbol .string,
+pre .lisp .keyword,
+pre .tex .special,
+pre .prompt {
+  color: #990073
+}
+
+pre .built_in,
+pre .lisp .title,
+pre .clojure .built_in {
+  color: #0086b3
+}
+
+pre .preprocessor,
+pre .pi,
+pre .doctype,
+pre .shebang,
+pre .cdata {
+  color: #999;
+  font-weight: bold
+}
+
+pre .deletion {
+  background: #fdd
+}
+
+pre .addition {
+  background: #dfd
+}
+
+pre .diff .change {
+  background: #0086b3
+}
+
+pre .chunk {
+  color: #aaa
+}
+
 body,h1,h2,h3,h4,h5{font-family:"Lato";color:#39424e}
 h1{font-size:2rem;font-weight:bold}
 h2{font-size:1.8rem}
@@ -5217,10 +5345,10 @@ a{color:#3e96da}
 .select.expanded .field{-webkit-border-radius:4px 4px 0 0;border-radius:4px 4px 0 0}
 .select.expanded .dropdown{display:block}
 .select .circle{-webkit-border-radius:50%;border-radius:50%;width:10px;height:10px;display:inline-block;margin-right:2px}
-.select .field{-webkit-border-radius:4px;border-radius:4px;padding:10px 20px 10px 10px;font-weight:700;background:#fff;border:1px solid #b4bac5;width:220px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;}
+.select .field{-webkit-border-radius:4px;border-radius:4px;padding:10px 20px 10px 10px;font-weight:700;background:#fff;border:1px solid #b4bac5;width:230px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:pointer;}
 .select .field .nub{width:36px;height:100%;position:absolute;top:0;right:0;border-left:1px solid #c2c7d0;-webkit-border-radius:0 4px 4px 0;border-radius:0 4px 4px 0;background:gradient(linear,left bottom,left top,color-stop(0,#f5f5f5),color-stop(.5,#fff));-webkit-box-shadow:0 1px 3px rgba(0,0,0,0.08),inset 0 -1px 4px rgba(151,159,175,0.2);box-shadow:0 1px 3px rgba(0,0,0,0.08),inset 0 -1px 4px rgba(151,159,175,0.2);}
 .select .field .nub:before{position:absolute;top:10px;right:10px}
-.select .dropdown{cursor:default;display:none;width:220px;position:absolute;top:37px;left:0;z-index:100;background:#fff;border:1px solid #c2c7d0;-webkit-border-radius:0 0 4px 4px;border-radius:0 0 4px 4px;-webkit-box-shadow:0 1px 3px rgba(0,0,0,0.05);box-shadow:0 1px 3px rgba(0,0,0,0.05);padding:10px 4px 4px 4px;}
+.select .dropdown{cursor:default;display:none;width:230px;position:absolute;top:37px;left:0;z-index:100;background:#fff;border:1px solid #c2c7d0;-webkit-border-radius:0 0 4px 4px;border-radius:0 0 4px 4px;-webkit-box-shadow:0 1px 3px rgba(0,0,0,0.05);box-shadow:0 1px 3px rgba(0,0,0,0.05);padding:10px 4px 4px 4px;}
 .select .dropdown .search{position:relative;}
 .select .dropdown .search .icon{position:absolute;top:8px;right:8px;opacity:.4;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=40)";filter:alpha(opacity=40)}
 .select .dropdown .search .input{border:1px solid #c2c7d0;height:auto;outline:0;margin:0 0 4px 0;padding-right:24px;}
@@ -5264,15 +5392,19 @@ a{color:#3e96da}
 #editor .header .icon.right{display:block;cursor:pointer;font-size:20px;line-height:38px;color:#979faf;-webkit-transition:0.3s color ease;-moz-transition:0.3s color ease;-o-transition:0.3s color ease;-ms-transition:0.3s color ease;transition:0.3s color ease;margin:0 6px;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
 #editor .header .icon.right:hover{color:#39424e}
 #editor .content .CodeMirror-lines{font-size:1.2em;line-height:1.3em}
+#editor .content span.cm-variable-2{color:#6cc644}
 #editor .footer{border-top:1px solid #c2c7d0;font-family:monospace;padding:16px;background:#fff;text-align:right}
-#results .warning,#results .stdout,#results .stderr{padding:20px}
-#results .warning,#results .stderr{position:relative;min-height:100px;}
-#results .warning .icon,#results .stderr .icon{position:absolute;top:20px;right:20px;font-size:60px}
+#results .warning,#results .notify,#results .stderr{position:relative;padding:20px;min-height:100px;}
+#results .warning .icon,#results .notify .icon,#results .stderr .icon{position:absolute;top:20px;right:20px;font-size:60px}
 #results .warning{background:#faecab;}
 #results .warning .icon{color:#ebdba0}
+#results .notify{background:#fafafa;}
+#results .notify .icon{color:rgba(0,0,0,0.2)}
 #results .stderr{background:#d45659;color:#fff;}
 #results .stderr h2{color:#fff}
 #results .stderr .icon{color:#f35f63}
+#results .stdout .line:not(:first-child){border-top:1px solid #f3f1f1;margin-top:10px;padding-top:10px}
+#results .stdout .line span.number{color:#6cc644}
 #footer{margin-top:20px;border-top:1px solid #e4e4e4;padding:20px 20px 20px 90px;text-align:center;}
 #footer p{font-size:16px}
 #footer ul{list-style-type:none;margin:0;}

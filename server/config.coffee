@@ -2,6 +2,11 @@ module.exports =
     # The languages/environments we support.
     'languages': [
         {
+            'key': 'coffeescript'
+            'label': 'CoffeeScript (Node.js)'
+            'cmd': 'cat > script.coffee; coffee script.coffee'
+            'color': '#DFDFDF'
+        }, {
             # Identifier.
             'key': 'java'
             # Label in the UI

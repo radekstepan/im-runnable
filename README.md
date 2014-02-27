@@ -46,13 +46,13 @@ restify = require 'restify'
 client = restify.createJsonClient
     'url': 'http://0.0.0.0:5000'
 
-client.post '/api/run',
+client.post '/api/v1/jobs.json',
     'lang': 'javascript'
     'src':  'console.log(3*6)'
 , (err, req, res, body) ->
     throw err if err
 
-    console.log body
+    # You get a job id back.
 ```
 
 ###API Design
