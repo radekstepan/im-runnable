@@ -29,9 +29,7 @@ module.exports = can.Component.extend
             return unless src = do editor.getValue
             
             # Submit a new job.
-            job.submit
-                'src':  do editor.getValue
-                'lang': editor.getOption('mode')
+            job.submit { src, 'lang': editor.getOption('mode') }
 
             # Switch to the results (2nd) tab.
             tabs 1
