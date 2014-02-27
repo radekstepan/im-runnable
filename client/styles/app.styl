@@ -362,8 +362,9 @@ a
             font-size: 1.2em
             line-height: 1.3em
 
-        span.cm-variable-2
-            color: $highlight-color
+        span
+            &.cm-variable-2, &.cm-number
+                color: $highlight-color
 
     .footer
         border-top: 1px solid #C2C7D0
@@ -407,11 +408,12 @@ a
             color: #F35F63
 
     .stdout
-        .line
-            &:not(:first-child)
-                border-top: 1px solid #F3F1F1
-                margin-top: 10px
-                padding-top: 10px
+        .lines
+            .line
+                &:not(:first-child)
+                    border-top: 1px solid #F3F1F1
+                    margin-top: 10px
+                    padding-top: 10px
 
             span.number
                 color: $highlight-color

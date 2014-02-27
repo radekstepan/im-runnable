@@ -275,9 +275,13 @@
     // results.coffee
     root.require.register('runnable/client/components/results.js', function(exports, require, module) {
     
-      var job;
+      var isNumber, job;
       
       job = require('../models/job');
+      
+      isNumber = function(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n);
+      };
       
       module.exports = can.Component.extend({
         tag: 'app-results',
@@ -308,11 +312,16 @@
             }
           },
           format: function(line) {
-            var obj;
-            try {
-              obj = JSON.parse(line);
-              line = hljs.highlight('javascript', JSON.stringify(obj, null, 2)).value;
-            } catch (_error) {}
+            (function() {
+              var obj;
+              if (isNumber(line.trim())) {
+                return;
+              }
+              try {
+                obj = JSON.parse(line);
+                return line = hljs.highlight('javascript', JSON.stringify(obj, null, 2)).value;
+              } catch (_error) {}
+            })();
             return "<pre>" + line + "</pre>";
           }
         }
@@ -713,7 +722,7 @@
     // results.mustache
     root.require.register('runnable/client/templates/results.js', function(exports, require, module) {
     
-      module.exports = ["<article id=\"results\">","    {{ #isRunning }}","    <div class=\"notify\">","        <h2>Your script is running</h2>","        <span class=\"icon help\"></span>","    </div>    ","    {{ /isRunning }}","","    {{ #isEmpty }}","    <div class=\"warning\">","        <h2>Your script has finished</h2>","        <span class=\"icon attention\"></span>","        <p>No data were logged into the terminal.</p>","    </div>","    {{ /isEmpty }}","","    {{ #job.out }}","        {{ #if stdout.length }}","            <div class=\"stdout\">","                <h2>Terminal output</h2>","            {{ #each stdout }}","                <div class=\"line\">{{{ format . }}}</div>","            {{ /each }}","            </div>","        {{ /if }}","","        {{ #if stderr.length }}","            <div class=\"stderr\">","                <h2>Errors found</h2>","                <span class=\"icon attention\"></span>","            {{ #each stderr }}","                <pre>{{ . }}</pre>","            {{ /each }}","            </div>","        {{ /if }}","    {{ /job.out }}","</article>"].join("\n");
+      module.exports = ["<article id=\"results\">","    {{ #isRunning }}","    <div class=\"notify\">","        <h2>Your script is running</h2>","        <span class=\"icon help\"></span>","    </div>    ","    {{ /isRunning }}","","    {{ #isEmpty }}","    <div class=\"warning\">","        <h2>Your script has finished</h2>","        <span class=\"icon attention\"></span>","        <p>No data were logged into the terminal.</p>","    </div>","    {{ /isEmpty }}","","    {{ #job.out }}","        {{ #if stdout.length }}","            <div class=\"stdout\">","                <h2>Terminal output</h2>","                <div class=\"lines\">","            {{ #each stdout }}","                    <div class=\"line\">{{{ format . }}}</div>","            {{ /each }}","                </div>","            </div>","        {{ /if }}","","        {{ #if stderr.length }}","            <div class=\"stderr\">","                <h2>Errors found</h2>","                <span class=\"icon attention\"></span>","            {{ #each stderr }}","                <pre>{{ . }}</pre>","            {{ /each }}","            </div>","        {{ /if }}","    {{ /job.out }}","</article>"].join("\n");
     });
 
     // select.mustache

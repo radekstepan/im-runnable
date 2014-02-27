@@ -18,9 +18,11 @@
         {{ #if stdout.length }}
             <div class="stdout">
                 <h2>Terminal output</h2>
+                <div class="lines">
             {{ #each stdout }}
-                <div class="line">{{{ format . }}}</div>
+                    <div class="line">{{{ format . }}}</div>
             {{ /each }}
+                </div>
             </div>
         {{ /if }}
 

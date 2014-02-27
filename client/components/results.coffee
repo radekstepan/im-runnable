@@ -1,5 +1,7 @@
 job = require '../models/job'
 
+isNumber = (n) -> not isNaN(parseFloat(n)) and isFinite n
+
 module.exports = can.Component.extend
 
     tag: 'app-results'
@@ -27,11 +29,14 @@ module.exports = can.Component.extend
 
         # Format a line from a terminal.
         format: (line) ->
-            # JSON?
-            try
-                obj = JSON.parse line
-                # Will be syntax highlighted.
-                line = hljs.highlight('javascript', JSON.stringify(obj, null, 2)).value
+            do ->
+                # Sometimes the JSON parser is mistaken; refs #17.
+                return if isNumber do line.trim
+                # JSON?
+                try
+                    obj = JSON.parse line
+                    # Will be syntax highlighted.
+                    line = hljs.highlight('javascript', JSON.stringify(obj, null, 2)).value
 
             # Just standard log.
             "<pre>#{line}</pre>"
