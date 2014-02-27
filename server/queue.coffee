@@ -38,8 +38,9 @@ module.exports = (opts) ->
     # How many at a time?
     , opts.concurrency
 
-    # Add a job to the queue & run it.
+    # Return this.
     fn =
+        # Add a job to the queue & run it.
         push: (job) ->
             # Generate the id of the job.
             job.id = id = do uuid.v4
