@@ -454,7 +454,18 @@
       });
       
       job.on('status', function(evt, status) {
-        return tabs.attr(1).attr('icon', status === 'running' ? 'spin6' : 'terminal');
+        var icon, out;
+        icon = (function() {
+          switch (false) {
+            case status !== 'running':
+              return 'spin6';
+            case !((out = this.attr('out')) && out.stderr.length):
+              return 'attention';
+            default:
+              return 'terminal';
+          }
+        }).call(this);
+        return tabs.attr(1).attr('icon', icon);
       });
       
       can.Component.extend({

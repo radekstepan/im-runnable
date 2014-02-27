@@ -26,10 +26,15 @@ tabs = new can.List [
 job.on 'change', ->
     tabs.attr(1).attr 'show', yes
 
-# When a job is running, change the second tab icon to a spinner.
+# When a job is running, change the second tab icons.
 job.on 'status', (evt, status) ->
-    tabs.attr(1).attr 'icon'
-    , if status is 'running' then 'spin6' else 'terminal'
+    icon = switch
+        when status is 'running' then 'spin6'
+        when (out = @attr 'out') and out.stderr.length then 'attention'
+        else 'terminal'
+
+    # Set it.
+    tabs.attr(1).attr 'icon', icon
 
 # Not exported! Not that it matters...
 can.Component.extend
