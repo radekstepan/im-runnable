@@ -81,6 +81,7 @@ app.router = new director.http.Router
                 get: ->
                     respond.call @, { 'data': config.languages }
             
+            # All jobs.
             '/jobs':
                 # Submit a job to run a script.
                 post: ->
@@ -102,18 +103,20 @@ app.router = new director.http.Router
                     
                     respond.call @, { 'data': { id, cmd } }, 201
 
-                # Get all of the jobs for a user.
+                # Get all of the jobs.
                 get: ->
                     respond.call @, { 'data': do queue.get }
 
-                # Retrieve the results of a job.
+                # Single job.
                 '/:id':
+                    # Retrieve the results of a job.
                     get: (id) ->
                         if data = queue.get id
                             respond.call @, { data }
                         else
                             respond.call @, { 'message': 'Not found' }, 404
-
+                    
+                    # Delete a job.
                     delete: (id) ->
                         if queue.delete id
                             respond.call @, { }, 204
