@@ -1,5 +1,4 @@
 #!/usr/bin/env coffee
-logger    = require('tracer').colorConsole()
 uuid      = require 'node-uuid'
 { queue } = require 'async'
 _         = require 'lodash'
