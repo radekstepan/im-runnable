@@ -12,22 +12,11 @@ Learn you some InterMine Web Services for good.
 $ docker run ubuntu /bin/echo hello world
 ```
 
-Create an image that you want to run against:
+Create an `intermine` image based on a `Dockerfile`:
 
 ```bash
-$ docker run -i -t ubuntu /bin/bash
+$ docker build -t intermine server/
 ```
-
-Once inside, install [Node.js](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager) etc.
-
-While your container is still running, get its id and save it as an image:
-
-```bash
-$ docker commit <id> imjs
-$ docker images
-```
-
-Now we have an image saved under `imjs`. You can now exit from the container.
 
 Start the service:
 
@@ -35,9 +24,38 @@ Start the service:
 $ sudo PORT=5000 node index.js
 ```
 
-You need to be in priviledged mode to run `docker` commands. Port is being specified by passing it as an env variable.
+##Commands
 
-Now you can post some code and get results back:
+###Update image
+
+While your container is still running, get its id and save it as an image:
+
+```bash
+$ docker commit <id> intermine
+$ docker images
+```
+
+Now we have an image saved under `intermine`. You can now exit from the container.
+
+You can also edit the `Dockerfile` in `server/` and rerun the abovementioned command to update the image.
+
+###Languages/environments
+
+The following command in `server/run.sh` is being run for each new job:
+
+```bash
+$ echo "$1" | sudo docker run -i intermine /bin/bash -c "$2"
+```
+
+The first argument is a script source, the second is one command out of `server/config.coffee` e.g.:
+
+```bash
+$ cat > script.js; node script.js
+```
+
+##API
+
+You can post some code to get a job id back:
 
 ```coffeescript
 #!/usr/bin/env coffee
@@ -51,11 +69,9 @@ client.post '/api/v1/jobs.json',
     'src':  'console.log(3*6)'
 , (err, req, res, body) ->
     throw err if err
-
-    # You get a job id back.
 ```
 
-###API Design
+###Design
 
 1. Use plural nouns, not verbs.
 1. Provide a `message` when handling errors.

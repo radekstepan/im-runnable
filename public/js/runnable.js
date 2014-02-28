@@ -246,7 +246,7 @@
               return;
             }
             job.submit({
-              'src': editor.getValue(),
+              src: src,
               'lang': editor.getOption('mode')
             });
             return tabs(1);
