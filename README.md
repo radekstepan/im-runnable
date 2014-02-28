@@ -18,6 +18,12 @@ Create an `intermine` image based on a `Dockerfile`:
 $ docker build -t intermine server/
 ```
 
+Install service dependencies:
+
+```bash
+$ npm install
+```
+
 Start the service:
 
 ```bash
@@ -51,6 +57,13 @@ The first argument is a script source, the second is one command out of `server/
 
 ```bash
 $ cat > script.js; node script.js
+```
+
+###Production
+
+```bash
+$ npm install pm2 -g
+$ PORT=80 pm2 start index.js
 ```
 
 ##API
